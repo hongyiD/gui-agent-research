@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            background: #F2F2F2;
+            font-family: 'Inter', sans-serif;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        .accent-bar {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 8px;
+            height: 100%;
+            background: #FF4D00;
+        }
+        .header {
+            padding: 60px 80px 20px 80px;
+            background: #F2F2F2;
+        }
+        .page-title {
+            font-size: 32px;
+            font-weight: 900;
+            color: #1A1A1A;
+            letter-spacing: -1px;
+        }
+        .subtitle {
+            font-size: 16px;
+            color: #333333;
+            margin-top: 12px;
+        }
+        .content-wrapper {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+        /* Reduced column padding and gaps to save vertical space */
+        .col-left {
+            background: #E0E0E0;
+            padding: 36px 60px; /* was 60px 80px */
+            display: flex;
+            flex-direction: column;
+            gap: 24px; /* was 40px */
+            position: relative;
+        }
+        .col-right {
+            background: #1A1A1A;
+            padding: 36px 60px; /* was 60px 80px */
+            display: flex;
+            flex-direction: column;
+            gap: 24px; /* was 40px */
+            color: #FFFFFF;
+            position: relative;
+        }
+        .col-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 12px; /* reduced from 20px */
+        }
+        .col-icon {
+            font-size: 32px;
+        }
+        .col-title {
+            font-size: 24px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .col-left .col-title { color: #666666; }
+        .col-right .col-title { color: #FF4D00; }
+        .col-left .col-icon { color: #666666; }
+        .col-right .col-icon { color: #FF4D00; }
+
+        .feature-item {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .feature-label {
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.6;
+        }
+        .feature-value {
+            font-size: 20px;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+        .col-left .feature-value { color: #333333; }
+        .col-right .feature-value { color: #FFFFFF; }
+
+        .vs-badge {
+            position: absolute;
+            top: 50%;
+            right: -30px;
+            width: 60px;
+            height: 60px;
+            background: #FF4D00;
+            color: #FFFFFF;
+            font-weight: 900;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            transform: translateY(-50%);
+        }
+        
+        /* Specific styling for the right column to highlight superiority */
+        .highlight-box {
+            border: 1px solid #FF4D00;
+            padding: 16px; /* slightly reduced */
+            margin-top: 12px; /* reduced from 20px */
+        }
+        .highlight-text {
+            color: #FF4D00;
+            font-size: 16px;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <div class="accent-bar"></div>
+        <div class="header">
+            <h1 class="page-title">系统级权限的降维打击</h1>
+            <p class="subtitle">从"模拟用户"到"成为系统"的本质跨越</p>
+        </div>
+        
+        <div class="content-wrapper">
+            <!-- Left: Accessibility -->
+            <div class="col-left">
+                <div class="vs-badge">VS</div>
+                <div class="col-header">
+                    <i class="fas fa-universal-access col-icon"></i>
+                    <h2 class="col-title">通用方案<br>无障碍服务</h2>
+                </div>
+                
+                <div class="feature-item">
+                    <span class="feature-label">交互机制</span>
+                    <span class="feature-value">模拟点击 (Simulated)<br>依赖 UI 控件树解析</span>
+                </div>
+
+                <div class="feature-item">
+                    <span class="feature-label">权限范围</span>
+                    <span class="feature-value">受限于 Android 沙箱<br>无法跨越安全边界</span>
+                </div>
+
+                <div class="feature-item">
+                    <span class="feature-label">典型痛点</span>
+                    <span class="feature-value">银行 App 无法输入密码<br>游戏画面无法识别控件</span>
+                </div>
+            </div>
+
+            <!-- Right: System Level -->
+            <div class="col-right">
+                <div class="col-header">
+                    <i class="fas fa-microchip col-icon"></i>
+                    <h2 class="col-title">豆包方案<br>系统级植入</h2>
+                </div>
+
+                <div class="feature-item">
+                    <span class="feature-label">交互机制</span>
+                    <span class="feature-value">指令注入 (Injection)<br>直接向内核发送输入事件</span>
+                </div>
+
+                <div class="feature-item">
+                    <span class="feature-label">权限范围</span>
+                    <span class="feature-value">底层穿透 (Root-like)<br>拥有系统的"上帝视角"</span>
+                </div>
+
+                <div class="highlight-box">
+                    <p class="highlight-text">
+                        <i class="fas fa-check-circle"></i> 突破限制：<br>
+                        <span style="color: #FFF; font-weight: 400; font-size: 14px; display: block; margin-top: 8px;">
+                            完美支持 Canvas 绘制的游戏、安全键盘、以及非标准 UI 控件，实现真正的全场景覆盖。
+                        </span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

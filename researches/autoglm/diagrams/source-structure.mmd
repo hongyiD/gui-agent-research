@@ -1,0 +1,46 @@
+graph TD
+    subgraph Main Entry
+        A[main.py] --> B{PhoneAgent};
+    end
+
+    subgraph Core Agent Logic
+        B --> C[agent.py: PhoneAgent Class];
+        C -- Manages --> D[State & Context];
+        C -- Uses --> E{ModelClient};
+        C -- Uses --> F{ActionHandler};
+    end
+
+    subgraph Model Interaction
+        E --> G[model/client.py];
+        G -- Builds --> H[Prompts];
+        G -- Sends to --> I[LLM API Endpoint];
+        H -- Loaded from --> J[config/prompts.py];
+    end
+
+    subgraph Action Handling
+        F --> K[actions/handler.py];
+        K -- Parses --> L[LLM Action JSON];
+        K -- Dispatches to --> M{ADB Commands};
+    end
+
+    subgraph ADB Layer
+        M --> N[adb/connection.py];
+        M --> O[adb/device.py];
+        M --> P[adb/input.py];
+        M --> Q[adb/screenshot.py];
+    end
+
+    A -- Parses CLI Args --> C;
+    J -- Defines --> R[Supported Apps & Prompts];
+
+    classDef entry fill:#f9f,stroke:#333,stroke-width:2px;
+    classDef agent fill:#cde4ff,stroke:#333,stroke-width:2px;
+    classDef model fill:#d4edda,stroke:#333,stroke-width:2px;
+    classDef action fill:#f8d7da,stroke:#333,stroke-width:2px;
+    classDef adb fill:#fff3cd,stroke:#333,stroke-width:2px;
+
+    class A entry;
+    class B,C,D agent;
+    class E,G,H,I,J,R model;
+    class F,K,L action;
+    class M,N,O,P,Q adb;

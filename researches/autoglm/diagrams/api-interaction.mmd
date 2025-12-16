@@ -1,0 +1,25 @@
+graph LR
+    subgraph "Client-Side (Open-AutoGLM)"
+        A[PhoneAgent] --> B{ModelClient};
+        B -- "Builds Prompt" --> C[MessageBuilder];
+        C -- "User Task + Screenshot (Base64)" --> D[Formatted Request Body];
+        B -- "POST /v1/chat/completions" --> D;
+    end
+
+    subgraph "Server-Side (LLM Backend)"
+        E[API Endpoint] --> F{LLM};
+        F -- "Processes Vision & Text" --> F;
+        F -- "Generates Thinking & Action" --> G[JSON Response];
+        G --> E;
+    end
+
+    D --> E;
+    E --> B;
+    B -- "Parses Response" --> H[Action JSON];
+    H --> I[ActionHandler];
+
+    classDef client fill:#cde4ff,stroke:#333,stroke-width:2px;
+    classDef server fill:#d4edda,stroke:#333,stroke-width:2px;
+
+    class A,B,C,D,H,I client;
+    class E,F,G server;

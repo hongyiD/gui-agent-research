@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            background: #F2F2F2;
+            font-family: 'Inter', sans-serif;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        .accent-bar {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 8px;
+            height: 100%;
+            background: #FF4D00;
+        }
+        .header {
+            padding: 60px 80px 40px 80px;
+        }
+        .page-title {
+            font-size: 32px;
+            font-weight: 900;
+            color: #1A1A1A;
+            letter-spacing: -1px;
+        }
+        .subtitle {
+            font-size: 16px;
+            color: #333333;
+            margin-top: 12px;
+        }
+        .content-wrapper {
+            flex: 1;
+            padding: 0 80px 60px 80px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 40px;
+        }
+        
+        .outlook-col {
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            padding-top: 30px;
+            border-top: 4px solid #CCCCCC;
+        }
+        .outlook-col.active {
+            border-top-color: #FF4D00;
+        }
+        
+        .time-tag {
+            font-size: 14px;
+            font-weight: 700;
+            color: #999999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+        .outlook-col.active .time-tag {
+            color: #FF4D00;
+        }
+        
+        .phase-title {
+            font-size: 24px;
+            font-weight: 900;
+            color: #1A1A1A;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+        
+        .desc-text {
+            font-size: 16px;
+            color: #333333;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        
+        .feature-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 15px;
+            color: #666666;
+            font-weight: 600;
+        }
+        .feature-item i {
+            font-size: 14px;
+            color: #1A1A1A;
+        }
+        
+        /* Visual connector for the timeline effect */
+        .timeline-dot {
+            position: absolute;
+            top: -10px; /* Half of height (16px) + border (4px) adjustment */
+            left: 0;
+            width: 16px;
+            height: 16px;
+            background: #F2F2F2;
+            border: 4px solid #CCCCCC;
+            border-radius: 50%;
+        }
+        .outlook-col.active .timeline-dot {
+            border-color: #FF4D00;
+            background: #FF4D00;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <div class="accent-bar"></div>
+        <div class="header">
+            <h1 class="page-title">未来展望：GUI Agent 的进化之路</h1>
+            <p class="subtitle">从垂直工具到数字分身的三阶段演进</p>
+        </div>
+        
+        <div class="content-wrapper">
+            <!-- Short Term -->
+            <div class="outlook-col">
+                <div class="timeline-dot"></div>
+                <div class="time-tag">Short Term (1-2 Years)</div>
+                <h2 class="phase-title">垂直领域的<br>爆发与普及</h2>
+                <p class="desc-text">
+                    通用 Agent 仍面临稳定性挑战，但特定垂直场景（如电商购物、数据录入、软件测试）的 Agent 将率先成熟并商业化。
+                </p>
+                <div class="feature-list">
+                    <div class="feature-item"><i class="fas fa-check"></i> 垂直场景高可靠性 (99%+)</div>
+                    <div class="feature-item"><i class="fas fa-check"></i> RPA 的智能化升级</div>
+                    <div class="feature-item"><i class="fas fa-check"></i> 浏览器插件形态为主</div>
+                </div>
+            </div>
+
+            <!-- Medium Term -->
+            <div class="outlook-col active">
+                <div class="timeline-dot"></div>
+                <div class="time-tag">Medium Term (3-5 Years)</div>
+                <h2 class="phase-title">操作系统的<br>Agent 化重构</h2>
+                <p class="desc-text">
+                    OS 厂商将深度集成 Agent 能力，传统的"应用孤岛"被打破。UI 设计范式从"以 App 为中心"转向"以意图为中心"。
+                </p>
+                <div class="feature-list">
+                    <div class="feature-item"><i class="fas fa-check"></i> 系统级 Agent API 标准化</div>
+                    <div class="feature-item"><i class="fas fa-check"></i> "无 UI" 交互成为主流</div>
+                    <div class="feature-item"><i class="fas fa-check"></i> 混合多模态交互 (语音+触控)</div>
+                </div>
+            </div>
+
+            <!-- Long Term -->
+            <div class="outlook-col">
+                <div class="timeline-dot"></div>
+                <div class="time-tag">Long Term (5+ Years)</div>
+                <h2 class="phase-title">数字分身与<br>一人公司</h2>
+                <p class="desc-text">
+                    Agent 具备长期记忆和自主规划能力，成为真正的"数字分身"。个人生产力被无限放大，"一人即公司"成为常态。
+                </p>
+                <div class="feature-list">
+                    <div class="feature-item"><i class="fas fa-check"></i> 全自主任务规划与执行</div>
+                    <div class="feature-item"><i class="fas fa-check"></i> 个性化长期记忆与偏好</div>
+                    <div class="feature-item"><i class="fas fa-check"></i> 人机共生的新社会形态</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

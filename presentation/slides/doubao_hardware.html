@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            background: #F2F2F2;
+            font-family: 'Inter', sans-serif;
+            position: relative;
+            overflow: hidden;
+        }
+        .accent-bar {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 8px;
+            height: 100%;
+            background: #FF4D00;
+        }
+        .header {
+            padding: 60px 80px 20px 80px;
+        }
+        .page-title {
+            font-size: 32px;
+            font-weight: 900;
+            color: #1A1A1A;
+            letter-spacing: -1px;
+        }
+        .subtitle {
+            font-size: 16px;
+            color: #333333;
+            margin-top: 12px;
+        }
+        .content-wrapper {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 60px;
+            padding: 40px 80px;
+            height: 550px;
+        }
+        .diagram-container {
+            background: #FFFFFF;
+            border: 2px solid #1A1A1A;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .diagram-container::after {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: -10px;
+            bottom: -10px;
+            border: 2px solid #FF4D00;
+            z-index: -1;
+        }
+        .diagram-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        .info-column {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 40px;
+        }
+        .info-block {
+            border-left: 4px solid #1A1A1A;
+            padding-left: 24px;
+        }
+        .info-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1A1A1A;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .info-title i {
+            color: #FF4D00;
+            font-size: 18px;
+        }
+        .info-desc {
+            font-size: 16px;
+            color: #333333;
+            line-height: 1.6;
+        }
+        .highlight-box {
+            background: #1A1A1A;
+            padding: 24px;
+            color: #FFFFFF;
+            margin-top: 20px;
+        }
+        .highlight-text {
+            font-size: 18px;
+            font-weight: 600;
+            line-height: 1.5;
+        }
+        .highlight-text span {
+            color: #FF4D00;
+            font-weight: 900;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <div class="accent-bar"></div>
+        <div class="header">
+            <h1 class="page-title">豆包手机硬件集成：中兴的关键贡献</h1>
+            <p class="subtitle">字节跳动提供"大脑"，中兴通讯提供"身体"与"神经系统"</p>
+        </div>
+        
+        <div class="content-wrapper">
+            <div class="diagram-container">
+                <img src="/home/ubuntu/gui-agent-research/presentation/hardware-integration.png" alt="Hardware Integration Architecture" class="diagram-image">
+            </div>
+
+            <div class="info-column">
+                <div class="info-block">
+                    <h3 class="info-title"><i class="fas fa-mobile-alt"></i> 旗舰级硬件平台</h3>
+                    <p class="info-desc">
+                        基于中兴（努比亚）成熟的旗舰手机硬件打造，提供强大的端侧算力支持，确保 AI 模型在本地流畅运行。
+                    </p>
+                </div>
+
+                <div class="info-block">
+                    <h3 class="info-title"><i class="fas fa-shield-alt"></i> 系统级权限开放</h3>
+                    <p class="info-desc">
+                        打破 Android 传统的沙盒限制，为 Agent 开放系统底层权限。这意味着 AI 不再是"外挂"，而是系统的"原生组件"。
+                    </p>
+                </div>
+
+                <div class="highlight-box">
+                    <p class="highlight-text">
+                        "软硬一体的深度整合，让豆包手机实现了<span>非像素级</span>的 UI 感知与操作，这是纯 App 方案无法逾越的护城河。"
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

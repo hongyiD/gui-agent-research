@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            background: #F2F2F2;
+            font-family: 'Inter', sans-serif;
+            position: relative;
+            overflow: hidden;
+        }
+        .accent-bar {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 8px;
+            height: 100%;
+            background: #FF4D00;
+        }
+        .header {
+            padding: 60px 80px 20px 80px;
+        }
+        .page-title {
+            font-size: 32px;
+            font-weight: 900;
+            color: #1A1A1A;
+            letter-spacing: -1px;
+        }
+        .subtitle {
+            font-size: 16px;
+            color: #333333;
+            margin-top: 12px;
+        }
+        .content-wrapper {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 60px;
+            padding: 40px 80px;
+            height: 550px;
+        }
+        .chart-section {
+            background: #FFFFFF;
+            padding: 30px;
+            border: 1px solid #E0E0E0;
+            display: flex;
+            flex-direction: column;
+        }
+        .chart-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1A1A1A;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chart-source {
+            font-size: 12px;
+            color: #999;
+            font-weight: 400;
+        }
+        .stats-section {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            justify-content: center;
+        }
+        .stat-card {
+            border-left: 4px solid #1A1A1A;
+            padding-left: 24px;
+        }
+        .stat-card.highlight {
+            border-left-color: #FF4D00;
+        }
+        .stat-value {
+            font-size: 48px;
+            font-weight: 900;
+            color: #1A1A1A;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+        .stat-card.highlight .stat-value {
+            color: #FF4D00;
+        }
+        .stat-label {
+            font-size: 16px;
+            font-weight: 700;
+            color: #333333;
+            margin-bottom: 4px;
+        }
+        .stat-desc {
+            font-size: 14px;
+            color: #666666;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <div class="accent-bar"></div>
+        <div class="header">
+            <h1 class="page-title">AutoGLM 性能表现</h1>
+            <p class="subtitle">在 WebArena-Lite 等权威基准测试中取得 SOTA 成绩</p>
+        </div>
+        
+        <div class="content-wrapper">
+            <div class="chart-section">
+                <div class="chart-title">
+                    <span>WebArena-Lite 任务成功率 (Success Rate)</span>
+                    <span class="chart-source">Source: AutoGLM Paper</span>
+                </div>
+                <div style="height: 360px; width: 100%;">
+                    <canvas id="perfChart"></canvas>
+                </div>
+            </div>
+
+            <div class="stats-section">
+                <div class="stat-card highlight">
+                    <div class="stat-value">No.1</div>
+                    <div class="stat-label">开源模型 SOTA</div>
+                    <p class="stat-desc">在同等参数量级下，性能超越 GPT-4o (Zero-shot) 和 Claude 3.5 Sonnet。</p>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-value">59.1%</div>
+                    <div class="stat-label">Web 任务成功率</div>
+                    <p class="stat-desc">通过自进化在线学习，相比初始版本提升显著，接近人类专家水平。</p>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-value">9B</div>
+                    <div class="stat-label">高效参数量</div>
+                    <p class="stat-desc">基于 GLM-4-9B 打造，在端侧部署和推理成本上具有巨大优势。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const ctx = document.getElementById('perfChart').getContext('2d');
+        const perfChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['AutoGLM', 'Claude 3.5 Sonnet', 'GPT-4o', 'Llama-3-70B'],
+                datasets: [{
+                    label: 'Success Rate (%)',
+                    data: [59.1, 52.3, 48.5, 35.0],
+                    backgroundColor: [
+                        '#FF4D00', // AutoGLM - Accent
+                        '#1A1A1A', // Others - Dark
+                        '#1A1A1A',
+                        '#1A1A1A'
+                    ],
+                    barPercentage: 0.6,
+                    categoryPercentage: 0.8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#1A1A1A',
+                        titleFont: { family: 'Inter', size: 14 },
+                        bodyFont: { family: 'Inter', size: 14 },
+                        padding: 12,
+                        cornerRadius: 0
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 70,
+                        grid: {
+                            color: '#E0E0E0',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            font: { family: 'Inter', size: 12 },
+                            color: '#666'
+                        }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: {
+                            font: { family: 'Inter', size: 14, weight: '600' },
+                            color: '#1A1A1A'
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            background: #F2F2F2;
+            font-family: 'Inter', sans-serif;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        .accent-bar {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 8px;
+            height: 100%;
+            background: #FF4D00;
+        }
+        .header {
+            padding: 60px 80px 40px 80px;
+        }
+        .page-title {
+            font-size: 32px;
+            font-weight: 900;
+            color: #1A1A1A;
+            letter-spacing: -1px;
+        }
+        .subtitle {
+            font-size: 16px;
+            color: #333333;
+            margin-top: 12px;
+        }
+        .content-wrapper {
+            flex: 1;
+            padding: 0 80px 60px 80px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 40px;
+            align-items: stretch;
+        }
+        .privacy-card {
+            background: #FFFFFF;
+            padding: 40px 30px;
+            display: flex;
+            flex-direction: column;
+            border-top: 4px solid #1A1A1A;
+            transition: transform 0.3s ease;
+        }
+        .privacy-card:nth-child(2) {
+            border-top-color: #FF4D00;
+            background: #FFF5F0;
+        }
+        .card-icon {
+            width: 64px;
+            height: 64px;
+            background: #1A1A1A;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        .privacy-card:nth-child(2) .card-icon {
+            background: #FF4D00;
+        }
+        .card-icon i {
+            color: #FFFFFF;
+            font-size: 28px;
+        }
+        .card-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1A1A1A;
+            margin-bottom: 16px;
+        }
+        .card-desc {
+            font-size: 16px;
+            color: #666666;
+            line-height: 1.6;
+        }
+        .tech-tag {
+            display: inline-block;
+            margin-top: auto;
+            padding-top: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #999999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .privacy-card:nth-child(2) .tech-tag {
+            color: #FF4D00;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <div class="accent-bar"></div>
+        <div class="header">
+            <h1 class="page-title">豆包手机的隐私保护设计</h1>
+            <p class="subtitle">系统级架构带来的原生安全优势</p>
+        </div>
+        
+        <div class="content-wrapper">
+            <!-- Card 1 -->
+            <div class="privacy-card">
+                <div class="card-icon"><i class="fas fa-sitemap"></i></div>
+                <h3 class="card-title">非像素级读取</h3>
+                <p class="card-desc">
+                    利用系统底层权限，直接获取 UI 控件树 (View Tree) 和元数据。Agent 无需"看"到屏幕截图即可理解界面结构，从源头避免了视觉信息的过度采集。
+                </p>
+                <div class="tech-tag">System API Access</div>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="privacy-card">
+                <div class="card-icon"><i class="fas fa-user-shield"></i></div>
+                <h3 class="card-title">端侧隐私脱敏</h3>
+                <p class="card-desc">
+                    在必须进行云端推理时，端侧安全模型会先行介入。自动识别并模糊处理身份证号、银行卡、人脸等敏感信息，确保上传数据的脱敏性。
+                </p>
+                <div class="tech-tag">On-Device AI Filter</div>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="privacy-card">
+                <div class="card-icon"><i class="fas fa-toggle-on"></i></div>
+                <h3 class="card-title">用户主权管控</h3>
+                <p class="card-desc">
+                    提供显性化的状态栏提示和物理级中断机制。用户可以实时看到 Agent 正在读取什么，并随时通过语音或按键终止操作。
+                </p>
+                <div class="tech-tag">Human-in-the-loop</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

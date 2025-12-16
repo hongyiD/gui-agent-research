@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            background: #F2F2F2;
+            font-family: 'Inter', sans-serif;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        .accent-bar {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 8px;
+            height: 100%;
+            background: #FF4D00;
+        }
+        .header {
+            padding: 60px 80px 20px 80px;
+        }
+        .page-title {
+            font-size: 32px;
+            font-weight: 900;
+            color: #1A1A1A;
+            letter-spacing: -1px;
+        }
+        .content-wrapper {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+        }
+        .section {
+            padding: 40px 80px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        .section-left {
+            background: #F2F2F2;
+            padding-right: 60px;
+        }
+        .section-right {
+            background: #E6E6E6;
+            padding-left: 60px;
+        }
+        .section-header {
+            font-size: 24px;
+            font-weight: 900;
+            color: #1A1A1A;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .section-header i {
+            font-size: 20px;
+        }
+        .pros-header i { color: #FF4D00; }
+        .cons-header i { color: #666666; }
+
+        .point-item {
+            display: flex;
+            flex-direction: column;
+        }
+        .point-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1A1A1A;
+            margin-bottom: 6px;
+        }
+        .point-desc {
+            font-size: 15px;
+            color: #333333;
+            line-height: 1.5;
+        }
+        .divider {
+            height: 1px;
+            background: #CCCCCC;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .section-right .divider {
+            background: #C0C0C0;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <div class="accent-bar"></div>
+        <div class="header">
+            <h1 class="page-title">豆包手机小结</h1>
+        </div>
+        
+        <div class="content-wrapper">
+            <!-- Advantages -->
+            <div class="section section-left">
+                <div class="section-header pros-header">
+                    <i class="fas fa-plus-circle"></i> 核心优势
+                </div>
+                
+                <div class="point-item">
+                    <div class="point-title">深度集成 (Deep Integration)</div>
+                    <div class="point-desc">拥有系统级权限，突破了 Android 沙箱限制，能够处理非标准控件和复杂交互。</div>
+                    <div class="divider"></div>
+                </div>
+
+                <div class="point-item">
+                    <div class="point-title">隐私安全 (Privacy First)</div>
+                    <div class="point-desc">非像素级读取和端侧脱敏机制，从架构层面最大程度保护了用户隐私。</div>
+                    <div class="divider"></div>
+                </div>
+
+                <div class="point-item">
+                    <div class="point-title">极致体验 (Superior UX)</div>
+                    <div class="point-desc">软硬一体优化带来了低延迟和高稳定性，实现了"无感"的智能服务体验。</div>
+                </div>
+            </div>
+
+            <!-- Limitations -->
+            <div class="section section-right">
+                <div class="section-header cons-header">
+                    <i class="fas fa-minus-circle"></i> 当前局限
+                </div>
+
+                <div class="point-item">
+                    <div class="point-title">硬件绑定 (Hardware Bound)</div>
+                    <div class="point-desc">目前仅限于特定机型（Nubia Z70 Ultra），用户覆盖面受限，难以快速普及。</div>
+                    <div class="divider"></div>
+                </div>
+
+                <div class="point-item">
+                    <div class="point-title">生态封闭 (Closed Ecosystem)</div>
+                    <div class="point-desc">作为"封闭花园"，第三方开发者难以接入或定制，生态扩展速度可能较慢。</div>
+                    <div class="divider"></div>
+                </div>
+
+                <div class="point-item">
+                    <div class="point-title">适配成本 (High Adaptation Cost)</div>
+                    <div class="point-desc">深度定制意味着每适配一款新硬件都需要巨大的研发投入，边际成本较高。</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

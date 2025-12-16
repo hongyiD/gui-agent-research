@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            background: #F2F2F2;
+            font-family: 'Inter', sans-serif;
+            position: relative;
+            overflow: hidden;
+        }
+        .accent-bar {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 8px;
+            height: 100%;
+            background: #FF4D00;
+        }
+        .header {
+            padding: 60px 80px 20px 80px;
+        }
+        .page-title {
+            font-size: 32px;
+            font-weight: 900;
+            color: #1A1A1A;
+            letter-spacing: -1px;
+        }
+        .subtitle {
+            font-size: 16px;
+            color: #333333;
+            margin-top: 12px;
+        }
+        /* Reduced bottom padding to bring overall page height under 720px */
+        .content-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            padding: 40px 80px 20px; /* bottom reduced from 40px to 20px */
+        }
+        .left-column {
+            display: flex;
+            flex-direction: column;
+            gap: 32px; /* reduced from 40px */
+        }
+        .concept-block {
+            border-left: 4px solid #1A1A1A;
+            padding-left: 24px;
+        }
+        .concept-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1A1A1A;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .concept-title i {
+            color: #FF4D00;
+            font-size: 18px;
+        }
+        .concept-desc {
+            font-size: 16px;
+            color: #333333;
+            line-height: 1.6;
+        }
+        .right-column {
+            display: flex;
+            flex-direction: column;
+            gap: 32px; /* reduced from 40px */
+        }
+        .process-viz {
+            background: #FFFFFF;
+            padding: 24px; /* reduced from 30px */
+            position: relative;
+        }
+        .process-step {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .process-step:last-child {
+            margin-bottom: 0;
+        }
+        .step-number {
+            font-size: 14px;
+            font-weight: 900;
+            color: #FF4D00;
+            margin-right: 16px;
+            width: 24px;
+        }
+        .step-box {
+            background: #F2F2F2;
+            padding: 12px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #1A1A1A;
+            flex-grow: 1;
+        }
+        .step-box.highlight {
+            background: #1A1A1A;
+            color: #FFFFFF;
+        }
+        .data-card {
+            background: #1A1A1A;
+            padding: 24px; /* reduced from 30px */
+            color: #FFFFFF;
+        }
+        .data-title {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #999;
+            margin-bottom: 20px;
+        }
+        .data-comparison {
+            display: flex;
+            align-items: flex-end;
+            gap: 20px;
+        }
+        .data-point {
+            display: flex;
+            flex-direction: column;
+        }
+        .data-value {
+            font-size: 48px;
+            font-weight: 900;
+            line-height: 1;
+        }
+        .data-value.accent {
+            color: #FF4D00;
+        }
+        .data-label {
+            font-size: 12px;
+            margin-top: 8px;
+            color: #CCCCCC;
+        }
+        .arrow-icon {
+            font-size: 24px;
+            color: #FF4D00;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <div class="accent-bar"></div>
+        <div class="header">
+            <h1 class="page-title">AutoGLM 核心创新：自进化在线学习</h1>
+            <p class="subtitle">通过真实环境试错与反思，持续提升任务执行的鲁棒性</p>
+        </div>
+        
+        <div class="content-wrapper">
+            <div class="left-column">
+                <div class="concept-block">
+                    <h3 class="concept-title"><i class="fas fa-robot"></i> 在线强化学习 (Online RL)</h3>
+                    <p class="concept-desc">
+                        不同于静态数据集训练，AutoGLM 在真实环境中进行"试错"。智能体通过与环境交互获得反馈，直接优化策略，适应动态变化的 GUI 场景。
+                    </p>
+                </div>
+                
+                <div class="concept-block">
+                    <h3 class="concept-title"><i class="fas fa-layer-group"></i> 渐进式课程学习</h3>
+                    <p class="concept-desc">
+                        采用由易到难的训练策略。从简单的单步操作开始，逐步过渡到复杂的长链路任务，确保模型基础能力的稳固构建。
+                    </p>
+                </div>
+
+                <div class="concept-block">
+                    <h3 class="concept-title"><i class="fas fa-undo-alt"></i> 错误恢复机制</h3>
+                    <p class="concept-desc">
+                        当任务失败时，智能体不会立即停止，而是触发"反思"机制，分析失败原因并尝试替代方案，从而在下一次尝试中修正行为。
+                    </p>
+                </div>
+            </div>
+
+            <div class="right-column">
+                <div class="process-viz">
+                    <div class="process-step">
+                        <span class="step-number">01</span>
+                        <div class="step-box">执行任务 (Execute)</div>
+                    </div>
+                    <div class="process-step">
+                        <span class="step-number">02</span>
+                        <div class="step-box">检测失败 (Failure Detected)</div>
+                    </div>
+                    <div class="process-step">
+                        <span class="step-number">03</span>
+                        <div class="step-box highlight">反思与修正 (Reflect & Correct)</div>
+                    </div>
+                    <div class="process-step">
+                        <span class="step-number">04</span>
+                        <div class="step-box">重试成功 (Retry Success)</div>
+                    </div>
+                </div>
+
+                <div class="data-card">
+                    <div class="data-title">WebArena-Lite 任务成功率</div>
+                    <div class="data-comparison">
+                        <div class="data-point">
+                            <span class="data-value">55.2%</span>
+                            <span class="data-label">首次尝试</span>
+                        </div>
+                        <i class="fas fa-arrow-right arrow-icon"></i>
+                        <div class="data-point">
+                            <span class="data-value accent">59.1%</span>
+                            <span class="data-label">允许重试 (自进化)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,34 @@
+graph TD
+    subgraph Core Execution Flow
+        direction LR
+        A[User Instruction] --> B{Planner};
+        B -- Generate Action Description --> C{Grounder};
+        B -- Planning and Reasoning --> D[LMM];
+        C -- Return Element Coordinates --> E[Executor];
+        D -- GUI Understanding --> B;
+        F[GUI Environment] -- Screenshot/UI --> D;
+        E -- Execute Action --> F;
+    end
+
+    subgraph Self-Evolving Online Learning Loop
+        direction TB
+        G[Actor-Critic Framework] --> H{Online Interaction};
+        H -- Failed Trajectory --> I[Instruction Mutator];
+        I -- Evolved Instruction --> H;
+        H -- Interaction Experience --> G;
+        J[KL-Constrained Policy Update] --> G;
+    end
+
+    B -.-> G;
+    F -.-> H;
+
+    classDef planner fill:#cde4ff,stroke:#333,stroke-width:2px;
+    classDef grounder fill:#e2d9ff,stroke:#333,stroke-width:2px;
+    classDef model fill:#d4edda,stroke:#333,stroke-width:2px;
+    classDef executor fill:#f8d7da,stroke:#333,stroke-width:2px;
+    classDef rl fill:#fff3cd,stroke:#333,stroke-width:2px;
+
+    class B,D planner;
+    class C grounder;
+    class E executor;
+    class G,H,I,J rl;

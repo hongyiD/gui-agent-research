@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            background: #F2F2F2;
+            font-family: 'Inter', sans-serif;
+            position: relative;
+            overflow: hidden;
+        }
+        .accent-bar {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 8px;
+            height: 100%;
+            background: #FF4D00;
+        }
+        .header {
+            padding: 60px 80px 20px 80px;
+        }
+        .page-title {
+            font-size: 32px;
+            font-weight: 900;
+            color: #1A1A1A;
+            letter-spacing: -1px;
+        }
+        .subtitle {
+            font-size: 16px;
+            color: #333333;
+            margin-top: 12px;
+        }
+        .content-wrapper {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 60px;
+            padding: 40px 80px;
+            height: 550px;
+        }
+        .image-container {
+            background: #FFFFFF;
+            padding: 20px;
+            border: 1px solid #E0E0E0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .image-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        .code-list {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            justify-content: center;
+        }
+        .code-item {
+            border-left: 4px solid #1A1A1A;
+            padding-left: 20px;
+        }
+        .code-path {
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            font-weight: 700;
+            color: #FF4D00;
+            margin-bottom: 6px;
+        }
+        .code-desc {
+            font-size: 16px;
+            color: #333333;
+            line-height: 1.5;
+        }
+        .tag {
+            display: inline-block;
+            background: #1A1A1A;
+            color: #FFFFFF;
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 2px;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <div class="accent-bar"></div>
+        <div class="header">
+            <h1 class="page-title">Open-AutoGLM 源码结构</h1>
+            <p class="subtitle">模块化设计，清晰分离核心逻辑、模型交互与底层操作</p>
+        </div>
+        
+        <div class="content-wrapper">
+            <div class="image-container">
+                <img src="source-structure.png" alt="Open-AutoGLM Source Structure">
+            </div>
+            
+            <div class="code-list">
+                <div class="code-item">
+                    <div class="code-path">main.py <span class="tag">Entry</span></div>
+                    <p class="code-desc">项目主入口 CLI。负责解析参数、环境检查、初始化并启动 Agent。</p>
+                </div>
+                
+                <div class="code-item">
+                    <div class="code-path">phone_agent/agent.py <span class="tag">Core</span></div>
+                    <p class="code-desc">核心 PhoneAgent 类。管理状态循环，协调感知、思考与行动。</p>
+                </div>
+
+                <div class="code-item">
+                    <div class="code-path">phone_agent/model/</div>
+                    <p class="code-desc">模型交互层。封装 API 请求逻辑 (Client) 与 Prompt 构建 (MessageBuilder)。</p>
+                </div>
+
+                <div class="code-item">
+                    <div class="code-path">phone_agent/actions/</div>
+                    <p class="code-desc">动作处理层。解析模型输出的 JSON，分发具体指令。</p>
+                </div>
+
+                <div class="code-item">
+                    <div class="code-path">phone_agent/adb/</div>
+                    <p class="code-desc">底层驱动层。封装 ADB 命令，处理截图、点击、滑动等物理操作。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

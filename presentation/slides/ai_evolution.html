@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            background: #F2F2F2;
+            font-family: 'Inter', sans-serif;
+            position: relative;
+        }
+        .accent-bar {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 8px;
+            height: 100%;
+            background: #FF4D00;
+        }
+        .content-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: 720px;
+            padding: 60px 80px 60px 80px;
+            gap: 60px;
+        }
+        .left-section {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding-left: 20px;
+        }
+        .page-title {
+            font-size: 36px;
+            font-weight: 900;
+            color: #1A1A1A;
+            line-height: 1.2;
+            letter-spacing: -1px;
+        }
+        .highlight {
+            color: #FF4D00;
+        }
+        .main-stat {
+            margin-top: 40px;
+            padding: 24px;
+            background: #1A1A1A;
+        }
+        .stat-number {
+            font-size: 64px;
+            font-weight: 900;
+            color: #FF4D00;
+        }
+        .stat-label {
+            font-size: 16px;
+            color: #F2F2F2;
+            margin-top: 8px;
+        }
+        .right-section {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 32px;
+        }
+        .point-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+        }
+        .point-icon {
+            width: 48px;
+            height: 48px;
+            background: #1A1A1A;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .point-icon i {
+            color: #FF4D00;
+            font-size: 20px;
+        }
+        .point-content h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1A1A1A;
+            margin-bottom: 8px;
+        }
+        .point-content p {
+            font-size: 14px;
+            color: #333333;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <div class="accent-bar"></div>
+        <div class="content-wrapper">
+            <div class="left-section">
+                <h1 class="page-title">AI 正在从<br><span class="highlight">"能听会说"</span><br>迈向<br><span class="highlight">"能看会做"</span></h1>
+                <div class="main-stat">
+                    <div class="stat-number">300%+</div>
+                    <div class="stat-label">2024-2025年 GUI Agent 相关论文数量同比增长</div>
+                </div>
+            </div>
+            <div class="right-section">
+                <div class="point-item">
+                    <div class="point-icon"><i class="fas fa-microphone"></i></div>
+                    <div class="point-content">
+                        <h3>传统 AI 助手的局限</h3>
+                        <p>Siri、Alexa 等只能处理预设的、有限的指令，无法理解复杂的用户意图。</p>
+                    </div>
+                </div>
+                <div class="point-item">
+                    <div class="point-icon"><i class="fas fa-eye"></i></div>
+                    <div class="point-content">
+                        <h3>多模态模型的成熟</h3>
+                        <p>大型多模态模型 (LMM) 的突破，使得 AI "看懂"屏幕成为可能。</p>
+                    </div>
+                </div>
+                <div class="point-item">
+                    <div class="point-icon"><i class="fas fa-hand-pointer"></i></div>
+                    <div class="point-content">
+                        <h3>GUI Agent 的目标</h3>
+                        <p>让 AI 像人一样，理解屏幕内容并自主完成任务，真正成为"数字员工"。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

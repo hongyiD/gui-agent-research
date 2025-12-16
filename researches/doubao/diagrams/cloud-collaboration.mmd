@@ -1,0 +1,27 @@
+graph TD
+    subgraph "User Interaction"
+        A[User Instruction] --> B{Doubao Assistant};
+    end
+
+    subgraph "On-Device (End-Side)"
+        B -- "Standard Mode (<500ms)" --> C[Shallow VLM];
+        C -- "Fast Response / Simple Task" --> D[Action Execution];
+        B -- "Pro Mode (Complex Task)" --> E{Cloud-Side Request};
+    end
+
+    subgraph "Cloud-Side (Cloud-Native)"
+        E --> F[Deep Reasoning & Tool Use];
+        F --> G[UI-TARS Full Model];
+        G -- "Complex Planning" --> H[Action Plan];
+        H --> E;
+    end
+
+    E -- "Optimized Action Plan" --> D;
+
+    classDef user fill:#f9f,stroke:#333,stroke-width:2px;
+    classDef device fill:#cde4ff,stroke:#333,stroke-width:2px;
+    classDef cloud fill:#d4edda,stroke:#333,stroke-width:2px;
+
+    class A user;
+    class B,C,D,E device;
+    class F,G,H cloud;

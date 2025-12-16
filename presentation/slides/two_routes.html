@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            background: #F2F2F2;
+            font-family: 'Inter', sans-serif;
+            position: relative;
+            overflow: hidden;
+        }
+        .accent-bar {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 8px;
+            height: 100%;
+            background: #FF4D00;
+        }
+        .header {
+            padding: 60px 80px 20px 80px;
+        }
+        .page-title {
+            font-size: 32px;
+            font-weight: 900;
+            color: #1A1A1A;
+            letter-spacing: -1px;
+        }
+        .content-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            height: 500px;
+            padding: 40px 80px;
+            gap: 60px;
+        }
+        .route-block {
+            display: flex;
+            flex-direction: column;
+            border-top: 4px solid #1A1A1A;
+            padding-top: 30px;
+        }
+        .route-block.highlight {
+            border-top-color: #FF4D00;
+        }
+        .route-number {
+            font-size: 14px;
+            font-weight: 700;
+            color: #FF4D00;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .route-title {
+            font-size: 48px;
+            font-weight: 900;
+            color: #1A1A1A;
+            margin-bottom: 8px;
+            line-height: 1;
+        }
+        .route-subtitle {
+            font-size: 20px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .feature-list {
+            list-style: none;
+        }
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 24px;
+            font-size: 18px;
+            color: #333;
+            line-height: 1.4;
+        }
+        .feature-icon {
+            color: #FF4D00;
+            margin-right: 16px;
+            margin-top: 5px;
+            font-size: 12px;
+        }
+        .bottom-bar {
+            position: absolute;
+            bottom: 0;
+            left: 80px;
+            right: 80px;
+            height: 80px;
+            border-top: 1px solid #E0E0E0;
+            display: flex;
+            align-items: center;
+        }
+        .bottom-text {
+            font-size: 14px;
+            color: #666;
+            font-weight: 500;
+        }
+        .vs-square {
+            position: absolute;
+            left: 50%;
+            top: 45%;
+            transform: translate(-50%, -50%);
+            background: #FF4D00;
+            color: #FFF;
+            font-weight: 900;
+            font-size: 20px;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <div class="accent-bar"></div>
+        <div class="header">
+            <h1 class="page-title">两大技术路线：开放平台 vs 封闭花园</h1>
+        </div>
+        
+        <div class="content-wrapper">
+            <!-- Route 1 -->
+            <div class="route-block">
+                <div class="route-number">Route 01</div>
+                <h2 class="route-title">AutoGLM</h2>
+                <p class="route-subtitle">智谱 AI & 清华大学</p>
+                
+                <ul class="feature-list">
+                    <li class="feature-item">
+                        <i class="fas fa-square feature-icon"></i>
+                        <div>
+                            <strong>开源框架</strong><br>
+                            <span style="font-size: 16px; color: #666;">Open-AutoGLM，兼容 OpenAI 标准</span>
+                        </div>
+                    </li>
+                    <li class="feature-item">
+                        <i class="fas fa-square feature-icon"></i>
+                        <div>
+                            <strong>产学研结合</strong><br>
+                            <span style="font-size: 16px; color: #666;">学术界前沿算法 + 产业界落地验证</span>
+                        </div>
+                    </li>
+                    <li class="feature-item">
+                        <i class="fas fa-square feature-icon"></i>
+                        <div>
+                            <strong>通用平台</strong><br>
+                            <span style="font-size: 16px; color: #666;">旨在构建赋能百业的底层基础设施</span>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Route 2 -->
+            <div class="route-block highlight">
+                <div class="route-number">Route 02</div>
+                <h2 class="route-title">豆包手机</h2>
+                <p class="route-subtitle">字节跳动 & 中兴通讯</p>
+                
+                <ul class="feature-list">
+                    <li class="feature-item">
+                        <i class="fas fa-square feature-icon"></i>
+                        <div>
+                            <strong>软硬一体</strong><br>
+                            <span style="font-size: 16px; color: #666;">系统级深度整合，获取底层权限</span>
+                        </div>
+                    </li>
+                    <li class="feature-item">
+                        <i class="fas fa-square feature-icon"></i>
+                        <div>
+                            <strong>极致产品</strong><br>
+                            <span style="font-size: 16px; color: #666;">追求无缝、稳定、高效的用户体验</span>
+                        </div>
+                    </li>
+                    <li class="feature-item">
+                        <i class="fas fa-square feature-icon"></i>
+                        <div>
+                            <strong>封闭花园</strong><br>
+                            <span style="font-size: 16px; color: #666;">打造标杆级终端，建立产品护城河</span>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="vs-square">VS</div>
+
+        <div class="bottom-bar">
+            <p class="bottom-text">本次调研将深入解析两者的技术细节、核心创新和战略意图，为行业提供参考。</p>
+        </div>
+    </div>
+</body>
+</html>

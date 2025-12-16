@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            background: #F2F2F2;
+            font-family: 'Inter', sans-serif;
+            position: relative;
+            overflow: hidden;
+        }
+        .accent-bar {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 8px;
+            height: 100%;
+            background: #FF4D00;
+        }
+        .header {
+            padding: 60px 80px 20px 80px;
+        }
+        .page-title {
+            font-size: 32px;
+            font-weight: 900;
+            color: #1A1A1A;
+            letter-spacing: -1px;
+        }
+        .subtitle {
+            font-size: 16px;
+            color: #333333;
+            margin-top: 12px;
+        }
+        .content-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            padding: 40px 80px;
+            height: 550px;
+        }
+        .code-section {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .code-window {
+            background: #1A1A1A;
+            border-radius: 0; /* Sharp corners for Swiss style */
+            box-shadow: 10px 10px 0px rgba(0,0,0,0.1);
+            overflow: hidden;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .window-header {
+            background: #333333;
+            padding: 12px 20px;
+            display: flex;
+            gap: 8px;
+        }
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #666;
+        }
+        .dot.red { background: #FF4D00; }
+        .code-content {
+            padding: 30px;
+            color: #F2F2F2;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .kwd { color: #FF4D00; font-weight: 700; }
+        .str { color: #CCCCCC; }
+        .func { color: #FFFFFF; font-weight: 700; }
+        .comment { color: #666666; font-style: italic; }
+        
+        .visual-section {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        .diagram-box {
+            background: #FFFFFF;
+            border: 2px solid #1A1A1A;
+            padding: 20px;
+            height: 280px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .diagram-box img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        .benefits-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .benefit-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+        }
+        .benefit-icon {
+            width: 32px;
+            height: 32px;
+            background: #1A1A1A;
+            color: #FF4D00;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+        .benefit-text h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1A1A1A;
+            margin-bottom: 4px;
+        }
+        .benefit-text p {
+            font-size: 14px;
+            color: #666666;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <div class="accent-bar"></div>
+        <div class="header">
+            <h1 class="page-title">AutoGLM API 设计</h1>
+            <p class="subtitle">兼容 OpenAI 接口标准，无缝接入现有开发生态</p>
+        </div>
+        
+        <div class="content-wrapper">
+            <div class="code-section">
+                <div class="code-window">
+                    <div class="window-header">
+                        <div class="dot red"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                    </div>
+                    <div class="code-content">
+<span class="kwd">from</span> openai <span class="kwd">import</span> OpenAI
+
+<span class="comment"># 无缝替换 Base URL</span>
+client = OpenAI(
+    base_url=<span class="str">"http://localhost:8000/v1"</span>,
+    api_key=<span class="str">"EMPTY"</span>
+)
+
+response = client.chat.completions.<span class="func">create</span>(
+    model=<span class="str">"autoglm-4-9b"</span>,
+    messages=[{
+        <span class="str">"role"</span>: <span class="str">"user"</span>,
+        <span class="str">"content"</span>: [
+            {<span class="str">"type"</span>: <span class="str">"text"</span>, <span class="str">"text"</span>: <span class="str">"帮我点一杯拿铁"</span>},
+            {<span class="str">"type"</span>: <span class="str">"image_url"</span>, <span class="str">"image_url"</span>: {<span class="str">"url"</span>: <span class="str">"..."</span>}}
+        ]
+    }]
+)
+                    </div>
+                </div>
+            </div>
+
+            <div class="visual-section">
+                <div class="diagram-box">
+                    <img src="/home/ubuntu/gui-agent-research/presentation/api-interaction.png" alt="API Interaction Flow">
+                </div>
+                
+                <div class="benefits-list">
+                    <div class="benefit-item">
+                        <div class="benefit-icon"><i class="fas fa-plug"></i></div>
+                        <div class="benefit-text">
+                            <h3>Drop-in Replacement</h3>
+                            <p>开发者无需学习新 SDK，直接复用 OpenAI 生态工具链（LangChain, LlamaIndex 等）。</p>
+                        </div>
+                    </div>
+                    <div class="benefit-item">
+                        <div class="benefit-icon"><i class="fas fa-images"></i></div>
+                        <div class="benefit-text">
+                            <h3>原生多模态支持</h3>
+                            <p>标准化的 Vision API 格式，支持传入屏幕截图和文本指令，自动处理多模态上下文。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

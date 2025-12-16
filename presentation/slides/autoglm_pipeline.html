@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            background: #F2F2F2;
+            font-family: 'Inter', sans-serif;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        .accent-bar {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 8px;
+            height: 100%;
+            background: #FF4D00;
+        }
+        .header {
+            padding: 60px 80px 20px 80px; /* keep top padding (60px) */
+        }
+        .page-title {
+            font-size: 32px;
+            font-weight: 900;
+            color: #1A1A1A;
+            letter-spacing: -1px;
+        }
+        .subtitle {
+            font-size: 16px;
+            color: #333333;
+            margin-top: 12px;
+        }
+        /* Reduced overall vertical spacing and element heights */
+        .content-wrapper {
+            flex: 1;
+            padding: 12px 80px 32px 80px; /* reduced top and bottom padding */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .diagram-container {
+            width: 100%;
+            height: 320px; /* reduced from 360px */
+            background: #FFFFFF;
+            border: 2px solid #1A1A1A;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px; /* reduced gap to steps */
+            padding: 20px;
+        }
+        .diagram-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px; /* reduced gap */
+            width: 100%;
+        }
+        .step-item {
+            border-top: 4px solid #1A1A1A;
+            padding-top: 12px; /* reduced padding */
+        }
+        .step-item:nth-child(1) { border-color: #1A1A1A; }
+        .step-item:nth-child(2) { border-color: #333333; }
+        .step-item:nth-child(3) { border-color: #FF4D00; }
+        .step-item:nth-child(4) { border-color: #1A1A1A; }
+
+        .step-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1A1A1A;
+            margin-bottom: 6px; /* slightly reduced */
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .step-title i {
+            font-size: 16px;
+            color: #FF4D00;
+        }
+        .step-desc {
+            font-size: 14px;
+            color: #666666;
+            line-height: 1.4; /* slightly tighter */
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <div class="accent-bar"></div>
+        <div class="header">
+            <h1 class="page-title">AutoGLM 规划与决策流程</h1>
+            <p class="subtitle">严谨的"感知-思考-行动"循环，确保每一步操作的准确性</p>
+        </div>
+        
+        <div class="content-wrapper">
+            <div class="diagram-container">
+                <!-- Using the generated mermaid diagram -->
+                <img src="/home/ubuntu/gui-agent-research/presentation/pipeline.png" alt="AutoGLM Pipeline" class="diagram-image">
+            </div>
+
+            <div class="steps-grid">
+                <div class="step-item">
+                    <h3 class="step-title"><i class="fas fa-eye"></i> 感知 (Perceive)</h3>
+                    <p class="step-desc">
+                        捕获当前屏幕截图 (Screenshot) 并获取前台应用信息 (App Info)，构建多模态输入。
+                    </p>
+                </div>
+                <div class="step-item">
+                    <h3 class="step-title"><i class="fas fa-brain"></i> 思考 (Think)</h3>
+                    <p class="step-desc">
+                        整合历史上下文、用户指令和当前屏幕状态，构建完整的 Prompt 发送给 LMM。
+                    </p>
+                </div>
+                <div class="step-item">
+                    <h3 class="step-title"><i class="fas fa-lightbulb"></i> 决策 (Decide)</h3>
+                    <p class="step-desc">
+                        模型进行推理，输出思考过程 (&lt;think&gt;) 和结构化的动作指令 (&lt;answer&gt; JSON)。
+                    </p>
+                </div>
+                <div class="step-item">
+                    <h3 class="step-title"><i class="fas fa-hand-pointer"></i> 行动 (Act)</h3>
+                    <p class="step-desc">
+                        解析动作 JSON，通过 ADB 接口在设备上执行具体的点击、滑动或输入操作。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            background: #F2F2F2;
+            font-family: 'Inter', sans-serif;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .accent-bar {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 8px;
+            height: 100%;
+            background: #FF4D00;
+        }
+        .header {
+            /* keep upper padding of the title (60px) unchanged */
+            padding: 60px 80px 8px 80px; /* reduced bottom padding */
+            flex-shrink: 0;
+        }
+        .page-title {
+            font-size: 32px;
+            font-weight: 900;
+            color: #1A1A1A;
+            letter-spacing: -1px;
+        }
+        .subtitle {
+            font-size: 16px;
+            color: #333333;
+            margin-top: 12px;
+        }
+        .content-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 80px 20px 80px; /* reduced bottom padding */
+        }
+        .diagram-container {
+            width: 100%;
+            height: 420px; /* reduced from 480px */
+            background: #FFFFFF;
+            border: 2px solid #1A1A1A;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px; /* reduced inner padding */
+            position: relative;
+        }
+        .diagram-container::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            right: -10px;
+            width: 100%;
+            height: 100%;
+            border: 2px solid #FF4D00;
+            z-index: -1;
+        }
+        .arch-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        .caption-box {
+            margin-top: 18px; /* reduced gap above captions */
+            display: flex;
+            gap: 24px; /* tightened gap */
+            width: 100%;
+        }
+        .caption-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .caption-icon {
+            width: 32px;
+            height: 32px;
+            background: #1A1A1A;
+            color: #FFFFFF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        .caption-text {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333333;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <div class="accent-bar"></div>
+        <div class="header">
+            <h1 class="page-title">AutoGLM 整体架构</h1>
+            <p class="subtitle">基于"感知-思考-行动"循环的模块化设计</p>
+        </div>
+        
+        <div class="content-wrapper">
+            <div class="diagram-container">
+                <img src="/home/ubuntu/gui-agent-research/presentation/architecture.png" alt="AutoGLM Architecture" class="arch-image">
+            </div>
+
+            <div class="caption-box">
+                <div class="caption-item">
+                    <div class="caption-icon"><i class="fas fa-eye"></i></div>
+                    <span class="caption-text">Perceive: 屏幕理解与信息提取</span>
+                </div>
+                <div class="caption-item">
+                    <div class="caption-icon"><i class="fas fa-brain"></i></div>
+                    <span class="caption-text">Think: 任务规划与动作决策</span>
+                </div>
+                <div class="caption-item">
+                    <div class="caption-icon"><i class="fas fa-hand-pointer"></i></div>
+                    <span class="caption-text">Act: 动作执行与环境交互</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

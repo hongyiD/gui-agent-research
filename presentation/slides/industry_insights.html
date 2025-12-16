@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            background: #F2F2F2;
+            font-family: 'Inter', sans-serif;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        .accent-bar {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 8px;
+            height: 100%;
+            background: #FF4D00;
+        }
+        .header {
+            padding: 60px 80px 20px 80px;
+        }
+        .page-title {
+            font-size: 32px;
+            font-weight: 900;
+            color: #1A1A1A;
+            letter-spacing: -1px;
+        }
+        .subtitle {
+            font-size: 16px;
+            color: #333333;
+            margin-top: 12px;
+        }
+        .content-wrapper {
+            flex: 1;
+            padding: 40px 80px 60px 80px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 40px;
+        }
+        
+        .insight-col {
+            display: flex;
+            flex-direction: column;
+            background: #FFFFFF;
+            border-top: 4px solid #1A1A1A;
+            padding: 30px;
+            height: 100%;
+        }
+        .insight-col:nth-child(2) {
+            border-top-color: #FF4D00;
+        }
+        
+        .col-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #E0E0E0;
+        }
+        .col-icon {
+            font-size: 24px;
+            color: #1A1A1A;
+        }
+        .insight-col:nth-child(2) .col-icon {
+            color: #FF4D00;
+        }
+        .col-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1A1A1A;
+        }
+
+        .advice-list {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        .advice-item {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .advice-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1A1A1A;
+        }
+        .advice-desc {
+            font-size: 14px;
+            color: #666666;
+            line-height: 1.5;
+        }
+        
+        .highlight-tag {
+            display: inline-block;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #FF4D00;
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <div class="accent-bar"></div>
+        <div class="header">
+            <h1 class="page-title">对行业的启示</h1>
+            <p class="subtitle">GUI Agent 时代的生存法则与机遇</p>
+        </div>
+        
+        <div class="content-wrapper">
+            <!-- Column 1: AI Companies -->
+            <div class="insight-col">
+                <div class="col-header">
+                    <i class="fas fa-brain col-icon"></i>
+                    <h2 class="col-title">AI 模型厂商</h2>
+                </div>
+                <div class="advice-list">
+                    <div class="advice-item">
+                        <span class="highlight-tag">Data Strategy</span>
+                        <div class="advice-title">构建高质量轨迹数据集</div>
+                        <p class="advice-desc">GUI 操作数据的稀缺是当前最大瓶颈。谁能建立自动化的数据飞轮（如 UI-TARS），谁就能率先突围。</p>
+                    </div>
+                    <div class="advice-item">
+                        <span class="highlight-tag">Model Architecture</span>
+                        <div class="advice-title">端侧小模型是关键</div>
+                        <p class="advice-desc">为了隐私和速度，必须将推理能力压缩到端侧设备可运行的规模（< 7B），而非一味追求大参数。</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Column 2: Hardware Vendors -->
+            <div class="insight-col">
+                <div class="col-header">
+                    <i class="fas fa-mobile-alt col-icon"></i>
+                    <h2 class="col-title">硬件厂商</h2>
+                </div>
+                <div class="advice-list">
+                    <div class="advice-item">
+                        <span class="highlight-tag">System Openness</span>
+                        <div class="advice-title">开放系统级 API</div>
+                        <p class="advice-desc">硬件的差异化不再仅靠摄像头或屏幕，而在于"对 AI 的友好程度"。开放底层权限给 Agent 是未来的核心竞争力。</p>
+                    </div>
+                    <div class="advice-item">
+                        <span class="highlight-tag">New Interaction</span>
+                        <div class="advice-title">设计 AI 专属交互键</div>
+                        <p class="advice-desc">类似于 iPhone 的 Action Button，为 AI Agent 提供物理入口，培养用户"一键唤起"的习惯。</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Column 3: Developers -->
+            <div class="insight-col">
+                <div class="col-header">
+                    <i class="fas fa-code col-icon"></i>
+                    <h2 class="col-title">应用开发者</h2>
+                </div>
+                <div class="advice-list">
+                    <div class="advice-item">
+                        <span class="highlight-tag">Agent-Ready UI</span>
+                        <div class="advice-title">适配 AI 的可读性</div>
+                        <p class="advice-desc">未来的 App 不仅给人看，也要给 AI 看。提供清晰的语义标签（Accessibility Labels）将显著提升被 Agent 调用的概率。</p>
+                    </div>
+                    <div class="advice-item">
+                        <span class="highlight-tag">Service Exposure</span>
+                        <div class="advice-title">从"抢入口"到"被集成"</div>
+                        <p class="advice-desc">与其争夺用户打开 App，不如通过 Intent 接口将核心服务暴露给系统 Agent，成为生态链的一环。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

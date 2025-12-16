@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        .slide-container {
+            width: 1280px;
+            min-height: 720px; /* keep as required */
+            background: #F2F2F2;
+            font-family: 'Inter', sans-serif;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .accent-bar { position: absolute; left: 0; top: 0; width: 8px; height: 100%; background: #FF4D00; }
+        /* Keep title top padding (60px) intact per rules; reduce other paddings */
+        .header { padding: 60px 60px 12px 60px; flex-shrink: 0; }
+        .page-title { font-size: 32px; font-weight: 900; color: #1A1A1A; letter-spacing: -1px; }
+        .subtitle { font-size: 16px; color: #333333; margin-top: 12px; }
+        /* Reduce content padding to save vertical space */
+        .content-wrapper { flex: 1; padding: 12px 60px 36px 60px; display: flex; flex-direction: column; justify-content: center; }
+        .comp-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        /* Reduce header cell padding */
+        .comp-table th { text-align: left; padding: 12px; border-bottom: 4px solid #1A1A1A; font-size: 24px; font-weight: 900; color: #1A1A1A; vertical-align: bottom; }
+        .comp-table th.th-dim { width: 20%; color: #999; font-size: 16px; text-transform: uppercase; font-weight: 700; }
+        .comp-table th.th-auto { width: 40%; }
+        .comp-table th.th-doubao { width: 40%; color: #FF4D00; }
+        /* Reduce vertical padding in cells */
+        .comp-table td { padding: 12px 12px; border-bottom: 1px solid #CCCCCC; vertical-align: top; }
+        .dim-cell { display: flex; align-items: center; gap: 8px; font-weight: 700; color: #1A1A1A; font-size: 16px; }
+        .dim-icon { color: #FF4D00; width: 24px; text-align: center; }
+        .content-cell { font-size: 16px; color: #333333; line-height: 1.5; }
+        .content-cell strong { display: block; font-size: 18px; margin-bottom: 4px; color: #1A1A1A; }
+        .tag { display: inline-block; font-size: 12px; padding: 2px 4px; background: #E0E0E0; color: #666; margin-top: 6px; font-weight: 600; }
+        .tag.highlight { background: #FFF5F0; color: #FF4D00; }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <div class="accent-bar"></div>
+        <div class="header">
+            <h1 class="page-title">AutoGLM vs 豆包手机：核心对比</h1>
+            <p class="subtitle">开放生态与极致体验的路线之争</p>
+        </div>
+        
+        <div class="content-wrapper">
+            <table class="comp-table">
+                <thead>
+                    <tr>
+                        <th class="th-dim">Dimension</th>
+                        <th class="th-auto">AutoGLM</th>
+                        <th class="th-doubao">豆包手机 (UI-TARS)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div class="dim-cell">
+                                <i class="fas fa-map-marker-alt dim-icon"></i>
+                                <span>定位</span>
+                            </div>
+                        </td>
+                        <td class="content-cell">
+                            <strong>通用 Agent 框架</strong>
+                            旨在赋能开发者，构建跨平台的智能体应用。
+                            <br><span class="tag">Infrastructure</span>
+                        </td>
+                        <td class="content-cell">
+                            <strong>AI 原生终端</strong>
+                            旨在直接服务消费者，打造下一代智能硬件。
+                            <br><span class="tag highlight">Consumer Product</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="dim-cell">
+                                <i class="fas fa-globe dim-icon"></i>
+                                <span>生态</span>
+                            </div>
+                        </td>
+                        <td class="content-cell">
+                            <strong>开源开放</strong>
+                            兼容 OpenAI 接口，易于集成到现有工作流。
+                            <br><span class="tag">Open Source</span>
+                        </td>
+                        <td class="content-cell">
+                            <strong>软硬一体 (封闭)</strong>
+                            深度绑定特定硬件 (Nubia)，构建护城河。
+                            <br><span class="tag">Walled Garden</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="dim-cell">
+                                <i class="fas fa-key dim-icon"></i>
+                                <span>权限</span>
+                            </div>
+                        </td>
+                        <td class="content-cell">
+                            <strong>应用层 (Accessibility)</strong>
+                            受限于 Android 沙箱，部分高安全场景受限。
+                        </td>
+                        <td class="content-cell">
+                            <strong>系统层 (System Root)</strong>
+                            拥有上帝视角，可穿透所有应用和控件。
+                            <br><span class="tag highlight">Full Access</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="dim-cell">
+                                <i class="fas fa-shield-alt dim-icon"></i>
+                                <span>隐私</span>
+                            </div>
+                        </td>
+                        <td class="content-cell">
+                            <strong>云端为主</strong>
+                            需上传截图到云端推理，存在隐私泄露风险。
+                        </td>
+                        <td class="content-cell">
+                            <strong>端云协同</strong>
+                            敏感数据本地脱敏，简单任务端侧闭环。
+                            <br><span class="tag highlight">Privacy First</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

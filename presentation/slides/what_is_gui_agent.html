@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            background: #F2F2F2;
+            font-family: 'Inter', sans-serif;
+            position: relative;
+        }
+        .accent-bar {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 8px;
+            height: 100%;
+            background: #FF4D00;
+        }
+        .header {
+            padding: 60px 80px 40px 80px;
+        }
+        .page-title {
+            font-size: 32px;
+            font-weight: 900;
+            color: #1A1A1A;
+            letter-spacing: -1px;
+        }
+        .subtitle {
+            font-size: 16px;
+            color: #333333;
+            margin-top: 12px;
+        }
+        .capabilities-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 40px;
+            padding: 0 80px;
+        }
+        .capability-item {
+            background: #FFFFFF;
+            padding: 40px 32px;
+            border-top: 4px solid #1A1A1A;
+        }
+        .capability-item.active {
+            border-top-color: #FF4D00;
+        }
+        .capability-icon {
+            width: 64px;
+            height: 64px;
+            background: #1A1A1A;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+        }
+        .capability-icon i {
+            color: #FF4D00;
+            font-size: 28px;
+        }
+        .capability-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1A1A1A;
+            margin-bottom: 8px;
+        }
+        .capability-en {
+            font-size: 14px;
+            font-weight: 600;
+            color: #FF4D00;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+        .capability-desc {
+            font-size: 14px;
+            color: #333333;
+            line-height: 1.7;
+        }
+        .analogy {
+            margin: 40px 80px 0 80px;
+            padding: 24px 32px;
+            background: #1A1A1A;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .analogy-icon {
+            color: #FF4D00;
+            font-size: 24px;
+        }
+        .analogy-text {
+            font-size: 16px;
+            color: #F2F2F2;
+        }
+        .analogy-highlight {
+            color: #FF4D00;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <div class="accent-bar"></div>
+        <div class="header">
+            <h1 class="page-title">什么是 GUI Agent</h1>
+            <p class="subtitle">一种能够理解图形用户界面并自主执行操作的 AI 智能体</p>
+        </div>
+        <div class="capabilities-grid">
+            <div class="capability-item active">
+                <div class="capability-icon"><i class="fas fa-eye"></i></div>
+                <h2 class="capability-title">感知</h2>
+                <p class="capability-en">Perceive</p>
+                <p class="capability-desc">通过视觉模型"看懂"屏幕截图或 UI 元素，理解界面的结构和内容。</p>
+            </div>
+            <div class="capability-item">
+                <div class="capability-icon"><i class="fas fa-brain"></i></div>
+                <h2 class="capability-title">思考</h2>
+                <p class="capability-en">Think</p>
+                <p class="capability-desc">理解用户意图，进行任务规划和推理，决定下一步应该做什么。</p>
+            </div>
+            <div class="capability-item">
+                <div class="capability-icon"><i class="fas fa-hand-pointer"></i></div>
+                <h2 class="capability-title">行动</h2>
+                <p class="capability-en">Act</p>
+                <p class="capability-desc">模拟人类操作（点击、滑动、输入），与界面进行真实交互。</p>
+            </div>
+        </div>
+        <div class="analogy">
+            <i class="fas fa-lightbulb analogy-icon"></i>
+            <p class="analogy-text">如果说传统 AI 是<span class="analogy-highlight">"大脑"</span>，那么 GUI Agent 就是给 AI 装上了<span class="analogy-highlight">"眼睛"</span>和<span class="analogy-highlight">"手"</span></p>
+        </div>
+    </div>
+</body>
+</html>

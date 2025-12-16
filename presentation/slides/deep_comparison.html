@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            background: #F2F2F2;
+            font-family: 'Inter', sans-serif;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        .accent-bar {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 8px;
+            height: 100%;
+            background: #FF4D00;
+        }
+        .header {
+            padding: 60px 80px 20px 80px;
+        }
+        .page-title {
+            font-size: 32px;
+            font-weight: 900;
+            color: #1A1A1A;
+            letter-spacing: -1px;
+        }
+        .subtitle {
+            font-size: 16px;
+            color: #333333;
+            margin-top: 12px;
+        }
+        .content-wrapper {
+            flex: 1;
+            padding: 20px 80px 10px 80px; /* reduced bottom padding from 60 -> 10 */
+            display: flex;
+            flex-direction: column;
+            gap: 12px; /* reduced gap between sections from 40 -> 12 */
+        }
+        
+        /* Comparison Columns */
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            flex: 1;
+        }
+        .strategy-col {
+            border-top: 4px solid #1A1A1A;
+            padding-top: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        .strategy-col.right {
+            border-top-color: #FF4D00;
+        }
+        .col-header {
+            margin-bottom: 24px;
+        }
+        .route-name {
+            font-size: 24px;
+            font-weight: 900;
+            color: #1A1A1A;
+            margin-bottom: 4px;
+        }
+        .route-philosophy {
+            font-size: 14px;
+            font-weight: 700;
+            color: #666666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .analysis-point {
+            margin-bottom: 20px;
+        }
+        .point-label {
+            font-size: 14px;
+            font-weight: 700;
+            color: #1A1A1A;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .point-label i {
+            font-size: 12px;
+            color: #FF4D00;
+        }
+        .point-text {
+            font-size: 15px;
+            color: #333333;
+            line-height: 1.5;
+        }
+
+        /* Convergence Block */
+        .convergence-block {
+            background: #1A1A1A;
+            padding: 30px 40px;
+            color: #FFFFFF;
+            position: relative;
+        }
+        .convergence-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #FF4D00;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+        .convergence-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+        .convergence-text {
+            font-size: 16px;
+            color: #CCCCCC;
+            line-height: 1.5;
+        }
+        .arrow-down {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #1A1A1A;
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <div class="accent-bar"></div>
+        <div class="header">
+            <h1 class="page-title">技术路线深度对比</h1>
+            <p class="subtitle">软件定义 vs 硬件定义：通往终局的不同路径</p>
+        </div>
+        
+        <div class="content-wrapper">
+            <div class="comparison-grid">
+                <!-- AutoGLM -->
+                <div class="strategy-col">
+                    <div class="col-header">
+                        <h2 class="route-name">AutoGLM 模式</h2>
+                        <p class="route-philosophy">Software-Defined Agent</p>
+                    </div>
+                    
+                    <div class="analysis-point">
+                        <div class="point-label"><i class="fas fa-circle"></i> 生态位 (Niche)</div>
+                        <p class="point-text">
+                            类似于微信小程序或浏览器插件。作为"超级应用"运行在 OS 之上，通过视觉技术抹平不同系统的差异。
+                        </p>
+                    </div>
+                    <div class="analysis-point">
+                        <div class="point-label"><i class="fas fa-circle"></i> 核心瓶颈 (Bottleneck)</div>
+                        <p class="point-text">
+                            <strong>权限天花板：</strong> 始终受限于 OS 的沙盒机制，无法触达锁屏、支付验证等系统级安全区域。
+                        </p>
+                    </div>
+                    <div class="analysis-point">
+                        <div class="point-label"><i class="fas fa-circle"></i> 扩展性 (Scalability)</div>
+                        <p class="point-text">
+                            极高。只要能安装 App 的设备都能运行，能够快速覆盖海量存量设备。
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Doubao -->
+                <div class="strategy-col right">
+                    <div class="col-header">
+                        <h2 class="route-name">豆包手机模式</h2>
+                        <p class="route-philosophy" style="color: #FF4D00;">OS-Defined Agent</p>
+                    </div>
+                    
+                    <div class="analysis-point">
+                        <div class="point-label"><i class="fas fa-circle"></i> 生态位 (Niche)</div>
+                        <p class="point-text">
+                            类似于 Siri 或 Android System Intelligence。作为基础设施嵌入内核，拥有上帝视角和最高执行权。
+                        </p>
+                    </div>
+                    <div class="analysis-point">
+                        <div class="point-label"><i class="fas fa-circle"></i> 核心瓶颈 (Bottleneck)</div>
+                        <p class="point-text">
+                            <strong>硬件绑定：</strong> 必须依赖特定厂商的硬件（如 Nubia），用户迁移成本高，市场渗透速度慢。
+                        </p>
+                    </div>
+                    <div class="analysis-point">
+                        <div class="point-label"><i class="fas fa-circle"></i> 体验上限 (Experience)</div>
+                        <p class="point-text">
+                            极高。能够实现息屏唤醒、跨应用无缝流转、静默执行等极致体验。
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="convergence-block">
+                <i class="fas fa-arrow-down arrow-down"></i>
+                <div class="convergence-label">Future Trend</div>
+                <h3 class="convergence-title">终局预测：Agent-Ready OS 的诞生</h3>
+                <p class="convergence-text">
+                    未来，操作系统厂商（Apple, Google, Huawei）将开放标准化的 "Agent API"（如 App Intents）。
+                    届时，AutoGLM 类的第三方 Agent 将获得类似系统级的权限，而豆包类的系统 Agent 将退守为"总调度器"，两者将在<strong>"标准化接口"</strong>处实现融合。
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

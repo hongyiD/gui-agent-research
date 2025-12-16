@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            background: #F2F2F2;
+            font-family: 'Inter', sans-serif;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        .accent-bar {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 8px;
+            height: 100%;
+            background: #FF4D00;
+        }
+        .header {
+            padding: 60px 80px 20px 80px;
+        }
+        .page-title {
+            font-size: 32px;
+            font-weight: 900;
+            color: #1A1A1A;
+            letter-spacing: -1px;
+        }
+        .subtitle {
+            font-size: 16px;
+            color: #333333;
+            margin-top: 12px;
+        }
+        .content-wrapper {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 80px;
+            padding: 40px 80px 60px 80px;
+        }
+        
+        /* Timeline Section */
+        .timeline-section {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+        }
+        .timeline-line {
+            position: absolute;
+            left: 24px;
+            top: 40px;
+            bottom: 40px;
+            width: 2px;
+            background: #CCCCCC;
+            z-index: 0;
+        }
+        .timeline-item {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 50px;
+            position: relative;
+            z-index: 1;
+        }
+        .timeline-item:last-child {
+            margin-bottom: 0;
+        }
+        .timeline-marker {
+            width: 50px;
+            height: 50px;
+            background: #FFFFFF;
+            border: 4px solid #1A1A1A;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            color: #1A1A1A;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        .timeline-item.active .timeline-marker {
+            border-color: #FF4D00;
+            color: #FF4D00;
+        }
+        .timeline-content h3 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1A1A1A;
+            margin-bottom: 8px;
+        }
+        .timeline-content p {
+            font-size: 15px;
+            color: #666666;
+            line-height: 1.5;
+        }
+
+        /* Model Card Section */
+        .model-card {
+            background: #1A1A1A;
+            padding: 40px;
+            color: #FFFFFF;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .card-header {
+            border-bottom: 1px solid #444;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .model-name {
+            font-size: 36px;
+            font-weight: 900;
+            color: #FFFFFF;
+            letter-spacing: -1px;
+        }
+        .model-tag {
+            display: inline-block;
+            background: #FF4D00;
+            color: #FFFFFF;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 4px 8px;
+            margin-top: 10px;
+            text-transform: uppercase;
+        }
+        .feature-list {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+        }
+        .feature-icon {
+            color: #FF4D00;
+            font-size: 20px;
+            margin-top: 2px;
+        }
+        .feature-text h4 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #FFFFFF;
+            margin-bottom: 4px;
+        }
+        .feature-text p {
+            font-size: 14px;
+            color: #CCCCCC;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <div class="accent-bar"></div>
+        <div class="header">
+            <h1 class="page-title">豆包手机核心引擎：UI-TARS 模型</h1>
+            <p class="subtitle">从通用多模态到 GUI 专家的进化之路</p>
+        </div>
+        
+        <div class="content-wrapper">
+            <div class="timeline-section">
+                <div class="timeline-line"></div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-marker">01</div>
+                    <div class="timeline-content">
+                        <h3>通用基座 (Foundation)</h3>
+                        <p>基于强大的通用视觉语言模型 (VLM)，具备广泛的世界知识和基础的图像理解能力。</p>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-marker">02</div>
+                    <div class="timeline-content">
+                        <h3>GUI 专项预训练 (Pre-training)</h3>
+                        <p>注入海量 UI 截图、DOM 树结构和操作轨迹数据，让模型理解按钮、图标、列表等 GUI 元素的语义。</p>
+                    </div>
+                </div>
+
+                <div class="timeline-item active">
+                    <div class="timeline-marker">03</div>
+                    <div class="timeline-content">
+                        <h3>端到端指令微调 (SFT & RLHF)</h3>
+                        <p>通过高质量的指令对齐，使模型能够直接将用户自然语言指令映射为具体的屏幕操作坐标。</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="model-card">
+                <div class="card-header">
+                    <div class="model-name">UI-TARS</div>
+                    <div class="model-tag">End-to-End GUI Agent</div>
+                </div>
+                
+                <div class="feature-list">
+                    <div class="feature-item">
+                        <i class="fas fa-compress-arrows-alt feature-icon"></i>
+                        <div class="feature-text">
+                            <h4>端到端架构</h4>
+                            <p>摒弃了传统的外挂检测模型，直接从像素输入到动作输出，减少了级联误差。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <i class="fas fa-expand feature-icon"></i>
+                        <div class="feature-text">
+                            <h4>高分辨率感知</h4>
+                            <p>支持原生高分辨率输入，能够看清密集排版的文字和微小的 UI 控件。</p>
+                        </div>
+                    </div>
+
+                    <div class="feature-item">
+                        <i class="fas fa-bolt feature-icon"></i>
+                        <div class="feature-text">
+                            <h4>极致推理速度</h4>
+                            <p>针对端侧部署优化，通过量化和算子加速，实现毫秒级的交互响应。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

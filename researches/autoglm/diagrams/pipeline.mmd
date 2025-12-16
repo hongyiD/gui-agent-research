@@ -1,0 +1,24 @@
+sequenceDiagram
+    participant User
+    participant Planner as Planner (LMM)
+    participant Grounder
+    participant Executor
+    participant Environment as GUI Environment (Web/Android)
+
+    User->>+Planner: Input Instruction (e.g., "Book a table")
+    loop Task Execution Cycle
+        Planner->>+Environment: Capture Screenshot
+        Environment-->>-Planner: Return Screenshot
+
+        Planner->>Planner: **Self-Correction & Reasoning**
+        Note over Planner: Analyze screenshot, history, and instruction to form a thought.
+
+        Planner->>+Grounder: Generate Action Description (e.g., "Click the 'Search' button")
+        Grounder-->>-Planner: Return Coordinates (e.g., [450, 300])
+
+        Planner->>+Executor: Send Action Command (e.g., Click at [450, 300])
+        Executor->>+Environment: Execute Action
+        Environment-->>-Executor: Action Completed
+        Executor-->>-Planner: Confirm Execution
+    end
+    Planner-->>-User: Task Finished or Error

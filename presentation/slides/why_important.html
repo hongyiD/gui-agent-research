@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            background: #F2F2F2;
+            font-family: 'Inter', sans-serif;
+            position: relative;
+            display: flex;
+        }
+        .accent-bar {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 8px;
+            height: 100%;
+            background: #FF4D00;
+        }
+        .left-pane {
+            width: 40%;
+            background: #1A1A1A;
+            padding: 80px 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+        }
+        .vision-label {
+            font-size: 14px;
+            font-weight: 700;
+            color: #FF4D00;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 32px;
+        }
+        .vision-quote {
+            font-size: 32px;
+            font-weight: 700;
+            color: #FFFFFF;
+            line-height: 1.4;
+        }
+        .vision-quote span {
+            color: #FF4D00;
+        }
+        .quote-icon {
+            position: absolute;
+            top: 60px;
+            left: 40px;
+            font-size: 80px;
+            color: #333333;
+            opacity: 0.5;
+            z-index: 0;
+        }
+        .right-pane {
+            width: 60%;
+            padding: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .page-title {
+            font-size: 36px;
+            font-weight: 900;
+            color: #1A1A1A;
+            margin-bottom: 60px;
+            letter-spacing: -1px;
+        }
+        .impact-list {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+        .impact-item {
+            display: flex;
+            gap: 24px;
+            align-items: flex-start;
+        }
+        .impact-number {
+            font-size: 24px;
+            font-weight: 900;
+            color: #FF4D00;
+            line-height: 1;
+            padding-top: 4px;
+        }
+        .impact-content h3 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1A1A1A;
+            margin-bottom: 8px;
+        }
+        .impact-content p {
+            font-size: 16px;
+            color: #333333;
+            line-height: 1.6;
+        }
+        .divider {
+            width: 100%;
+            height: 1px;
+            background: #E0E0E0;
+            margin-top: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <div class="left-pane">
+            <i class="fas fa-quote-left quote-icon"></i>
+            <div style="position: relative; z-index: 1;">
+                <p class="vision-label">Future Vision</p>
+                <p class="vision-quote">
+                    "帮我订一张明天去上海最便宜的机票。"
+                    <br><br>
+                    <span>剩下的事情，<br>它全部搞定。</span>
+                </p>
+            </div>
+        </div>
+        <div class="right-pane">
+            <h1 class="page-title">为什么 GUI Agent 如此重要</h1>
+            <div class="impact-list">
+                <div class="impact-item">
+                    <div class="impact-number">01</div>
+                    <div class="impact-content">
+                        <h3>解放生产力</h3>
+                        <p>自动化处理重复性、跨应用的复杂任务，将人类从繁琐的点击操作中解放出来。</p>
+                        <div class="divider"></div>
+                    </div>
+                </div>
+                <div class="impact-item">
+                    <div class="impact-number">02</div>
+                    <div class="impact-content">
+                        <h3>重构人机交互</h3>
+                        <p>从"人找服务"（用户需要知道打开哪个 App、如何操作）转变为"服务找人"（用户只需提出意图）。</p>
+                        <div class="divider"></div>
+                    </div>
+                </div>
+                <div class="impact-item">
+                    <div class="impact-number">03</div>
+                    <div class="impact-content">
+                        <h3>赋能所有人</h3>
+                        <p>降低技术门槛，让不熟悉复杂软件操作的老年人或非技术用户也能轻松驾驭数字工具。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

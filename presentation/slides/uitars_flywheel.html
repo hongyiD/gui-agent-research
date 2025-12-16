@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            background: #F2F2F2;
+            font-family: 'Inter', sans-serif;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .accent-bar {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 8px;
+            height: 100%;
+            background: #FF4D00;
+        }
+        .header {
+            padding: 60px 80px 12px 80px; /* keep top padding 60px */
+            flex-shrink: 0;
+        }
+        .page-title {
+            font-size: 32px;
+            font-weight: 900;
+            color: #1A1A1A;
+            letter-spacing: -1px;
+        }
+        .subtitle {
+            font-size: 16px;
+            color: #333333;
+            margin-top: 12px;
+        }
+        .content-wrapper {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 24px; /* reduced gap */
+            padding: 20px 60px 30px 60px; /* shrunk padding */
+        }
+        .text-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px; /* reduced vertical gap */
+            justify-content: center;
+        }
+        .problem-box {
+            border-left: 4px solid #1A1A1A;
+            padding-left: 18px; /* slightly reduced */
+        }
+        .section-label {
+            font-size: 14px;
+            font-weight: 700;
+            color: #FF4D00;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+        .section-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1A1A1A;
+            margin-bottom: 8px;
+        }
+        .section-desc {
+            font-size: 16px;
+            color: #333333;
+            line-height: 1.6;
+        }
+        .solution-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px; /* reduced */
+        }
+        .solution-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        .item-icon {
+            width: 32px;
+            height: 32px;
+            background: #1A1A1A;
+            color: #FFFFFF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+        .item-content h4 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1A1A1A;
+            margin-bottom: 4px;
+        }
+        .item-content p {
+            font-size: 14px;
+            color: #666666;
+            line-height: 1.4;
+        }
+        .image-section {
+            background: #FFFFFF;
+            border: 2px solid #1A1A1A;
+            padding: 12px; /* reduced padding */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .image-section::after {
+            content: '';
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 40px;
+            height: 40px;
+            border-top: 4px solid #FF4D00;
+            border-right: 4px solid #FF4D00;
+        }
+        .flywheel-img {
+            max-width: 100%;
+            max-height: 260px; /* cap image height to reduce overall slide height */
+            object-fit: contain;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <div class="accent-bar"></div>
+        <div class="header">
+            <h1 class="page-title">UI-TARS 核心创新：数据飞轮</h1>
+            <p class="subtitle">解决 GUI 数据稀缺难题的闭环自进化机制</p>
+        </div>
+        
+        <div class="content-wrapper">
+            <div class="text-section">
+                <div class="problem-box">
+                    <div class="section-label">The Challenge</div>
+                    <h3 class="section-title">数据稀缺瓶颈</h3>
+                    <p class="section-desc">高质量 GUI 操作轨迹（尤其是长链路）稀缺，人工标注成本高。</p>
+                </div>
+
+                <div class="solution-list">
+                    <div class="section-label">The Solution</div>
+                    <div class="solution-item">
+                        <div class="item-icon"><i class="fas fa-sync-alt"></i></div>
+                        <div class="item-content">
+                            <h4>自训练循环 (Self-Training)</h4>
+                            <p>模型在仿真中自主探索，生成大量合成数据。</p>
+                        </div>
+                    </div>
+                    <div class="solution-item">
+                        <div class="item-icon"><i class="fas fa-filter"></i></div>
+                        <div class="item-content">
+                            <h4>感知奖励模型 (Reward Model)</h4>
+                            <p>自动评分筛选高质量轨迹，过滤错误操作。</p>
+                        </div>
+                    </div>
+                    <div class="solution-item">
+                        <div class="item-icon"><i class="fas fa-chart-line"></i></div>
+                        <div class="item-content">
+                            <h4>持续迭代 (Iteration)</h4>
+                            <p>更强的模型产生更优数据，形成正向循环。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="image-section">
+                <img src="/home/ubuntu/gui-agent-research/presentation/data-flywheel.png" alt="UI-TARS Data Flywheel" class="flywheel-img">
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,236 @@
+{
+  "project_info": {
+    "title": "GUI 自主智能体技术深度调研",
+    "created": 1765897556.4230669,
+    "last_updated": 1765898180.4839504,
+    "total_slides": 28
+  },
+  "slides": {
+    "cover": "edited",
+    "ai_evolution": "edited",
+    "what_is_gui_agent": "edited",
+    "why_important": "edited",
+    "two_routes": "edited",
+    "autoglm_overview": "edited",
+    "autoglm_interface": "edited",
+    "autoglm_rl": "edited",
+    "autoglm_arch": "edited",
+    "autoglm_pipeline": "edited",
+    "autoglm_source": "edited",
+    "autoglm_api": "edited",
+    "autoglm_perf": "edited",
+    "autoglm_summary": "edited",
+    "doubao_overview": "edited",
+    "uitars_model": "edited",
+    "uitars_flywheel": "edited",
+    "doubao_hardware": "edited",
+    "system_permission": "edited",
+    "doubao_cloud": "edited",
+    "doubao_privacy": "edited",
+    "doubao_demo": "edited",
+    "doubao_summary": "edited",
+    "comparison": "edited",
+    "deep_comparison": "edited",
+    "industry_insights": "edited",
+    "future_outlook": "edited",
+    "thanks": "edited"
+  },
+  "outline": [
+    {
+      "id": "cover",
+      "title": "GUI 自主智能体技术深度调研",
+      "summary": "封面页，展示主标题、副标题和演讲者信息",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "ai_evolution",
+      "title": "AI 正在从能听会说迈向能看会做",
+      "summary": "介绍 2025 年是 GUI Agent 元年，AI 能力边界正在扩展",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "what_is_gui_agent",
+      "title": "什么是 GUI Agent",
+      "summary": "定义 GUI Agent 的三大核心能力：感知、思考、行动",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "why_important",
+      "title": "为什么 GUI Agent 如此重要",
+      "summary": "阐述 GUI Agent 对生产力解放和人机交互重构的意义",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "two_routes",
+      "title": "两大技术路线：开放平台 vs 封闭花园",
+      "summary": "引出 AutoGLM 和豆包手机两大技术路线",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "autoglm_overview",
+      "title": "AutoGLM 项目概览",
+      "summary": "介绍 AutoGLM 的背景、团队和定位",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "autoglm_interface",
+      "title": "AutoGLM 核心创新：中间接口设计",
+      "summary": "详解中间接口如何解耦规划与定位",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "autoglm_rl",
+      "title": "AutoGLM 核心创新：自进化在线学习",
+      "summary": "介绍自进化 RL 框架如何提升错误恢复能力",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "autoglm_arch",
+      "title": "AutoGLM 整体架构",
+      "summary": "展示 AutoGLM 整体架构图",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "autoglm_pipeline",
+      "title": "AutoGLM 规划与决策流程",
+      "summary": "展示 AutoGLM 的感知-思考-行动循环",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "autoglm_source",
+      "title": "Open-AutoGLM 源码结构",
+      "summary": "展示开源项目的模块化设计",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "autoglm_api",
+      "title": "AutoGLM API 设计",
+      "summary": "介绍兼容 OpenAI 标准的 API 设计",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "autoglm_perf",
+      "title": "AutoGLM 性能表现",
+      "summary": "展示在各基准测试上的 SOTA 成绩",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "autoglm_summary",
+      "title": "AutoGLM 小结",
+      "summary": "总结 AutoGLM 的优势与局限",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "doubao_overview",
+      "title": "豆包手机项目概览",
+      "summary": "介绍豆包手机的背景、团队和定位",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "uitars_model",
+      "title": "豆包手机核心引擎：UI-TARS 模型",
+      "summary": "介绍 UI-TARS 模型的演进历程",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "uitars_flywheel",
+      "title": "UI-TARS 核心创新：数据飞轮",
+      "summary": "详解数据飞轮机制如何解决数据稀缺问题",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "doubao_hardware",
+      "title": "豆包手机硬件集成：中兴的关键贡献",
+      "summary": "介绍中兴提供的硬件平台和系统级权限",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "system_permission",
+      "title": "系统级权限的降维打击",
+      "summary": "对比系统级权限与无障碍服务的差异",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "doubao_cloud",
+      "title": "豆包手机端云协同架构",
+      "summary": "介绍标准模式和 Pro 模式的动态调度",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "doubao_privacy",
+      "title": "豆包手机的隐私保护设计",
+      "summary": "介绍非像素级读取和隐私脱敏技术",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "doubao_demo",
+      "title": "豆包手机的演示能力",
+      "summary": "展示长链路、跨应用任务执行能力",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "doubao_summary",
+      "title": "豆包手机小结",
+      "summary": "总结豆包手机的优势与局限",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "comparison",
+      "title": "AutoGLM vs 豆包手机：核心对比",
+      "summary": "多维度对比两大技术路线",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "deep_comparison",
+      "title": "技术路线深度对比",
+      "summary": "分析两种路线的优劣和融合趋势",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "industry_insights",
+      "title": "对行业的启示",
+      "summary": "为 AI 公司、硬件厂商和开发者提供建议",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "future_outlook",
+      "title": "未来展望",
+      "summary": "展望 GUI Agent 的短期、中期和长期发展",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "thanks",
+      "title": "感谢与问答",
+      "summary": "结束页，感谢聆听并提供参考文献",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    }
+  ]
+}

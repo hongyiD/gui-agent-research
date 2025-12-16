@@ -1,0 +1,19 @@
+graph TD
+    subgraph UI-TARS Data Flywheel
+        A[Initial Model] --> B{Generate Trajectories};
+        B -- New Interaction Data --> C{Filter & Annotate};
+        C -- Low-quality Data --> D[Re-labeling & Correction];
+        C -- High-quality Data --> E[Supervised Fine-tuning];
+        D --> F[Contrastive Training];
+        F --> G[Updated Model];
+        E --> G;
+        G --> B;
+    end
+
+    classDef model fill:#cde4ff,stroke:#333,stroke-width:2px;
+    classDef data fill:#d4edda,stroke:#333,stroke-width:2px;
+    classDef train fill:#fff3cd,stroke:#333,stroke-width:2px;
+
+    class A,G model;
+    class B,C,D data;
+    class E,F train;

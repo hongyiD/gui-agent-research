@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            background: #F2F2F2;
+            font-family: 'Inter', sans-serif;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .accent-bar {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 8px;
+            height: 100%;
+            background: #FF4D00;
+        }
+        .header {
+            padding: 60px 80px 20px 80px;
+        }
+        .page-title {
+            font-size: 32px;
+            font-weight: 900;
+            color: #1A1A1A;
+            letter-spacing: -1px;
+        }
+        .subtitle {
+            font-size: 16px;
+            color: #333333;
+            margin-top: 12px;
+        }
+        .content-wrapper {
+            flex: 1;
+            padding: 20px 80px 60px 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        /* User Input Section */
+        .input-section {
+            margin-bottom: 10px; /* reduced from 50px to save vertical space */
+            display: flex;
+            justify-content: center;
+        }
+        .user-bubble {
+            background: #1A1A1A;
+            color: #FFFFFF;
+            padding: 24px 40px;
+            font-size: 24px;
+            font-weight: 600;
+            position: relative;
+            box-shadow: 10px 10px 0 rgba(255, 77, 0, 0.2);
+            max-width: 800px;
+            text-align: center;
+            line-height: 1.4;
+        }
+        .user-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 10px 10px 0;
+            border-style: solid;
+            border-color: #1A1A1A transparent transparent transparent;
+        }
+        .user-label {
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: #FF4D00;
+            color: #FFFFFF;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 2px 8px;
+            text-transform: uppercase;
+        }
+
+        /* Execution Flow */
+        .flow-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            position: relative;
+            margin-bottom: 60px;
+        }
+        .flow-line {
+            position: absolute;
+            top: 40px;
+            left: 50px;
+            right: 50px;
+            height: 2px;
+            background: #CCCCCC;
+            z-index: 0;
+            border-top: 2px dashed #CCCCCC;
+            background: none;
+        }
+        .app-step {
+            position: relative;
+            z-index: 1;
+            width: 280px;
+            background: #FFFFFF;
+            border: 2px solid #1A1A1A;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #E0E0E0;
+            padding-bottom: 8px;
+        }
+        .app-icon {
+            width: 32px;
+            height: 32px;
+            background: #F2F2F2;
+            color: #1A1A1A;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+        .app-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1A1A1A;
+        }
+        .action-list {
+            list-style: none;
+        }
+        .action-item {
+            font-size: 14px;
+            color: #666666;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .action-item::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: #FF4D00;
+            border-radius: 50%;
+        }
+
+        /* Metrics Bar */
+        .metrics-bar {
+            display: flex;
+            justify-content: space-around;
+            border-top: 1px solid #CCCCCC;
+            padding-top: 30px;
+        }
+        .metric-item {
+            text-align: center;
+        }
+        .metric-value {
+            font-size: 36px;
+            font-weight: 900;
+            color: #1A1A1A;
+            margin-bottom: 4px;
+        }
+        .metric-label {
+            font-size: 14px;
+            color: #666666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <div class="accent-bar"></div>
+        <div class="header">
+            <h1 class="page-title">豆包手机的演示能力</h1>
+            <p class="subtitle">一句话搞定跨应用复杂任务，打破 App 孤岛</p>
+        </div>
+        
+        <div class="content-wrapper">
+            <!-- User Input -->
+            <div class="input-section">
+                <div class="user-bubble">
+                    <span class="user-label">User Request</span>
+                    "帮我订一张明天上午去上海的机票，并预订外滩附近的酒店，最后添加到日程。"
+                </div>
+            </div>
+
+            <!-- Execution Flow -->
+            <div class="flow-container">
+                <div class="flow-line"></div>
+                
+                <div class="app-step">
+                    <div class="step-header">
+                        <div class="app-icon"><i class="fas fa-plane"></i></div>
+                        <div class="app-name">携程旅行</div>
+                    </div>
+                    <ul class="action-list">
+                        <li class="action-item">搜索北京-上海航班</li>
+                        <li class="action-item">筛选"上午"时段</li>
+                        <li class="action-item">填写乘机人信息</li>
+                        <li class="action-item">提交订单</li>
+                    </ul>
+                </div>
+
+                <div class="app-step">
+                    <div class="step-header">
+                        <div class="app-icon"><i class="fas fa-hotel"></i></div>
+                        <div class="app-name">去哪儿旅行</div>
+                    </div>
+                    <ul class="action-list">
+                        <li class="action-item">定位"上海外滩"</li>
+                        <li class="action-item">筛选四星级以上</li>
+                        <li class="action-item">选择房型并预订</li>
+                        <li class="action-item">确认支付方式</li>
+                    </ul>
+                </div>
+
+                <div class="app-step">
+                    <div class="step-header">
+                        <div class="app-icon"><i class="fas fa-calendar-alt"></i></div>
+                        <div class="app-name">系统日历</div>
+                    </div>
+                    <ul class="action-list">
+                        <li class="action-item">创建"上海出差"日程</li>
+                        <li class="action-item">自动填入航班时间</li>
+                        <li class="action-item">添加酒店地址备注</li>
+                        <li class="action-item">设置出发提醒</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Metrics -->
+            <div class="metrics-bar">
+                <div class="metric-item">
+                    <div class="metric-value">3</div>
+                    <div class="metric-label">跨越应用数</div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-value">12+</div>
+                    <div class="metric-label">自动执行步骤</div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-value" style="color: #FF4D00;">0</div>
+                    <div class="metric-label">人工干预次数</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

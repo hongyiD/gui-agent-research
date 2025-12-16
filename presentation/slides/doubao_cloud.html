@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            background: #F2F2F2;
+            font-family: 'Inter', sans-serif;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .accent-bar { position: absolute; left: 0; top: 0; width: 8px; height: 100%; background: #FF4D00; }
+        .header { padding: 60px 80px 20px 80px; flex-shrink: 0; }
+        .page-title { font-size: 32px; font-weight: 900; color: #1A1A1A; letter-spacing: -1px; }
+        .subtitle { font-size: 16px; color: #333333; margin-top: 12px; }
+
+        /* Reduced vertical padding and tightened spacing to avoid overflow */
+        .content-wrapper {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 60px;
+            padding: 24px 80px 40px 80px; /* top reduced from 40 -> 24, bottom 60 -> 40 */
+        }
+        .diagram-container {
+            background: #FFFFFF;
+            border: 2px solid #1A1A1A;
+            padding: 12px; /* reduced padding */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        /* keep decorative border but do not extend beyond container */
+        .diagram-container::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            border: 2px solid #FF4D00;
+            z-index: -1;
+        }
+        .diagram-image {
+            max-width: 100%;
+            max-height: 360px; /* limit image height to save vertical space */
+            object-fit: contain;
+        }
+        .modes-column {
+            display: flex;
+            flex-direction: column;
+            gap: 12px; /* reduced gap */
+            justify-content: flex-start; /* align to top to avoid extra vertical centering space */
+        }
+        .mode-card {
+            padding: 12px; /* reduced padding */
+            border-left: 4px solid #1A1A1A;
+            background: #FFFFFF;
+        }
+        .mode-card.pro {
+            border-left-color: #FF4D00;
+            background: #1A1A1A;
+            color: #FFFFFF;
+        }
+        .mode-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+        .mode-title { font-size: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+        .mode-icon { font-size: 24px; }
+        .mode-card.pro .mode-title { color: #FFFFFF; }
+        .mode-card.pro .mode-icon { color: #FF4D00; }
+        .mode-desc { font-size: 15px; line-height: 1.5; margin-top: 4px; }
+        .mode-card.pro .mode-desc { color: #CCCCCC; }
+        .mode-card:not(.pro) .mode-desc { color: #333333; }
+        .router-note { margin-top: 6px; padding: 10px; background: #E0E0E0; font-size: 14px; color: #333333; display: flex; align-items: center; gap: 12px; }
+        .router-icon { color: #FF4D00; font-size: 16px; }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <div class="accent-bar"></div>
+        <div class="header">
+            <h1 class="page-title">豆包手机端云协同架构</h1>
+            <p class="subtitle">动态调度策略：在隐私、速度与智能之间寻找最优解</p>
+        </div>
+
+        <div class="content-wrapper">
+            <div class="diagram-container">
+                <img src="/home/ubuntu/gui-agent-research/presentation/cloud-collaboration.png" alt="Cloud-Edge Collaboration" class="diagram-image">
+            </div>
+
+            <div class="modes-column">
+                <!-- Standard Mode (concise to save vertical space) -->
+                <div class="mode-card">
+                    <div class="mode-header">
+                        <h3 class="mode-title">Standard Mode</h3>
+                        <i class="fas fa-microchip mode-icon"></i>
+                    </div>
+                    <p class="mode-desc"><strong>端侧运行 (On-Device)</strong> 处理高频、简单、隐私敏感的任务（如设置闹钟、打开应用）。</p>
+                </div>
+
+                <!-- Pro Mode (concise) -->
+                <div class="mode-card pro">
+                    <div class="mode-header">
+                        <h3 class="mode-title">Pro Mode</h3>
+                        <i class="fas fa-cloud mode-icon"></i>
+                    </div>
+                    <p class="mode-desc"><strong>云端运行 (Cloud)</strong> 处理复杂推理、跨应用规划的任务（如“规划旅行行程并订票”）。</p>
+                </div>
+
+                <div class="router-note">
+                    <i class="fas fa-random router-icon"></i>
+                    <div>
+                        <strong>智能路由 (Smart Router)</strong><br>
+                        系统根据用户指令的复杂度自动判断，无感切换端/云模式。
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,26 @@
+graph TD
+    subgraph "Software & AI (ByteDance)"
+        A[Doubao Assistant] --> B{UI-TARS Model};
+        B --> C{System-Level GUI Agent};
+    end
+
+    subgraph "Operating System (Customized Android)"
+        C --> D[System-Level Permissions];
+        D -- "INJECT_EVENTS" --> E[Android Kernel];
+        D -- "Enhanced AccessibilityService" --> F[Android Framework];
+    end
+
+    subgraph "Hardware (ZTE/nubia)"
+        G[nubia M153 Prototype] --> E;
+        G --> F;
+    end
+
+    C -- "Simulate Clicks/Swipes" --> E;
+
+    classDef ai fill:#cde4ff,stroke:#333,stroke-width:2px;
+    classDef os fill:#d4edda,stroke:#333,stroke-width:2px;
+    classDef hardware fill:#fff3cd,stroke:#333,stroke-width:2px;
+
+    class A,B,C ai;
+    class D,E,F os;
+    class G hardware;

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            background: #F2F2F2;
+            font-family: 'Inter', sans-serif;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        .accent-bar {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 8px;
+            height: 100%;
+            background: #FF4D00;
+        }
+        .header {
+            padding: 60px 80px 20px 80px;
+        }
+        .page-title {
+            font-size: 32px;
+            font-weight: 900;
+            color: #1A1A1A;
+            letter-spacing: -1px;
+        }
+        .content-wrapper {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0; /* No gap, using borders/backgrounds */
+        }
+        .section {
+            padding: 40px 80px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        .section-left {
+            background: #F2F2F2;
+            padding-right: 60px;
+        }
+        .section-right {
+            background: #E6E6E6; /* Slightly darker for contrast */
+            padding-left: 60px;
+        }
+        .section-header {
+            font-size: 24px;
+            font-weight: 900;
+            color: #1A1A1A;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .section-header i {
+            font-size: 20px;
+        }
+        .pros-header i { color: #FF4D00; }
+        .cons-header i { color: #666666; }
+
+        .point-item {
+            display: flex;
+            flex-direction: column;
+        }
+        .point-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1A1A1A;
+            margin-bottom: 6px;
+        }
+        .point-desc {
+            font-size: 15px;
+            color: #333333;
+            line-height: 1.5;
+        }
+        .divider {
+            height: 1px;
+            background: #CCCCCC;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .section-right .divider {
+            background: #C0C0C0;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <div class="accent-bar"></div>
+        <div class="header">
+            <h1 class="page-title">AutoGLM 小结</h1>
+        </div>
+        
+        <div class="content-wrapper">
+            <!-- Advantages -->
+            <div class="section section-left">
+                <div class="section-header pros-header">
+                    <i class="fas fa-plus-circle"></i> 核心优势
+                </div>
+                
+                <div class="point-item">
+                    <div class="point-title">通用性强 (High Generality)</div>
+                    <div class="point-desc">跨平台支持 Web 和 Android，不依赖特定系统 API，具备广泛的适用性。</div>
+                    <div class="divider"></div>
+                </div>
+
+                <div class="point-item">
+                    <div class="point-title">架构先进 (Advanced Architecture)</div>
+                    <div class="point-desc">"规划-定位"解耦设计有效解决了 LMM 空间定位难题，提升了操作精度。</div>
+                    <div class="divider"></div>
+                </div>
+
+                <div class="point-item">
+                    <div class="point-title">自进化能力 (Self-Evolution)</div>
+                    <div class="point-desc">引入在线强化学习和课程学习，具备在真实环境中自我修正和提升的能力。</div>
+                    <div class="divider"></div>
+                </div>
+
+                <div class="point-item">
+                    <div class="point-title">开源生态 (Open Source)</div>
+                    <div class="point-desc">Open-AutoGLM 提供了完整的代码框架，降低了研究门槛，促进了社区创新。</div>
+                </div>
+            </div>
+
+            <!-- Limitations -->
+            <div class="section section-right">
+                <div class="section-header cons-header">
+                    <i class="fas fa-minus-circle"></i> 当前局限
+                </div>
+
+                <div class="point-item">
+                    <div class="point-title">依赖基座模型 (Model Dependency)</div>
+                    <div class="point-desc">整体性能强依赖于 GLM-4v 等大模型的能力，模型幻觉仍可能导致决策错误。</div>
+                    <div class="divider"></div>
+                </div>
+
+                <div class="point-item">
+                    <div class="point-title">推理延迟 (Inference Latency)</div>
+                    <div class="point-desc">云端推理导致响应速度较慢，难以满足高实时性交互（如游戏操作）的需求。</div>
+                    <div class="divider"></div>
+                </div>
+
+                <div class="point-item">
+                    <div class="point-title">隐私顾虑 (Privacy Concerns)</div>
+                    <div class="point-desc">基于截图的云端处理模式涉及用户屏幕数据上传，存在潜在的隐私安全风险。</div>
+                    <div class="divider"></div>
+                </div>
+
+                <div class="point-item">
+                    <div class="point-title">长链路稳定性 (Stability)</div>
+                    <div class="point-desc">在步骤极多的复杂任务中，单步错误的累积效应仍可能导致最终任务失败。</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

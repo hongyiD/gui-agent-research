@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            background: #F2F2F2;
+            font-family: 'Inter', sans-serif;
+            position: relative;
+            padding: 60px 80px 20px; /* keep top padding 60, reduce bottom */
+        }
+        .accent-bar {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 8px;
+            height: 100%;
+            background: #FF4D00;
+        }
+        .header {
+            margin-bottom: 30px; /* reduced from 60 to save height */
+        }
+        .page-title {
+            font-size: 32px;
+            font-weight: 900;
+            color: #1A1A1A;
+            letter-spacing: -1px;
+        }
+        .subtitle {
+            font-size: 16px;
+            color: #333333;
+            margin-top: 12px;
+        }
+        .problem-statement {
+            background: #E0E0E0;
+            padding: 16px 24px; /* shrink inner padding */
+            border-left: 4px solid #1A1A1A;
+            margin-bottom: 30px; /* reduced from 50 */
+            width: 80%;
+        }
+        .problem-text {
+            font-size: 16px;
+            color: #333333;
+            font-weight: 600;
+        }
+        .diagram-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 40px; /* reduced from 60 */
+        }
+        .module-box {
+            background: #FFFFFF;
+            border: 2px solid #1A1A1A;
+            padding: 20px; /* reduced */
+            width: 300px;
+            height: 180px; /* reduced from 220 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .module-box.highlight {
+            border-color: #FF4D00;
+            background: #FFF5F0;
+        }
+        .module-icon {
+            font-size: 40px;
+            color: #1A1A1A;
+            margin-bottom: 12px; /* slightly reduced */
+        }
+        .module-box.highlight .module-icon {
+            color: #FF4D00;
+        }
+        .module-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1A1A1A;
+            margin-bottom: 8px; /* reduced */
+            text-transform: uppercase;
+        }
+        .module-desc {
+            font-size: 14px;
+            color: #666666;
+            text-align: center;
+            line-height: 1.4;
+        }
+        .flow-arrow {
+            flex: 1;
+            height: 2px;
+            background: #1A1A1A;
+            position: relative;
+            margin: 0 20px;
+        }
+        .flow-arrow::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: -4px;
+            width: 0;
+            height: 0;
+            border-left: 8px solid #1A1A1A;
+            border-top: 5px solid transparent;
+            border-bottom: 5px solid transparent;
+        }
+        .interface-label {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            font-weight: 700;
+            color: #FF4D00;
+            text-transform: uppercase;
+            background: #F2F2F2;
+            padding: 0 10px;
+        }
+        .data-block {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            background: #1A1A1A;
+            padding: 20px 30px; /* reduced */
+            color: #FFFFFF;
+        }
+        .data-number {
+            font-size: 48px;
+            font-weight: 900;
+            color: #FF4D00;
+        }
+        .data-text {
+            font-size: 16px;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <div class="accent-bar"></div>
+        
+        <div class="header">
+            <h1 class="page-title">AutoGLM 核心创新：中间接口设计</h1>
+            <p class="subtitle">通过解耦"规划"与"定位》，解决 LMM 直接预测坐标的难题</p>
+        </div>
+
+        <div class="problem-statement">
+            <p class="problem-text">挑战：让通用多模态模型直接输出精确的屏幕坐标 (x, y) 难度极高，且错误率难以控制。</p>
+        </div>
+
+        <div class="diagram-container">
+            <div class="module-box">
+                <i class="fas fa-brain module-icon"></i>
+                <h3 class="module-title">规划器</h3>
+                <p class="module-desc">Planner<br>生成自然语言描述<br>"点击'提交'按钮"</p>
+            </div>
+
+            <div class="flow-arrow">
+                <span class="interface-label">中间接口 (自然语言)</span>
+            </div>
+
+            <div class="module-box highlight">
+                <i class="fas fa-crosshairs module-icon"></i>
+                <h3 class="module-title">定位器</h3>
+                <p class="module-desc">Grounder<br>将描述映射为坐标<br>Object Detection</p>
+            </div>
+        </div>
+
+        <div class="data-block">
+            <div class="data-number">+10%</div>
+            <div class="data-text">
+                <strong>性能显著提升</strong><br>
+                该解耦设计使 GPT-4o 等通用模型在 GUI 任务上的成功率提升近 10%，证明了架构优化的价值。
+            </div>
+        </div>
+    </div>
+</body>
+</html>
