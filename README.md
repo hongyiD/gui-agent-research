@@ -18,6 +18,7 @@
 | **AutoGLM** | 智谱AI | 9B | 手机端助手框架，MIT协议 | [查看报告](./researches/AutoGLM-Phone-9B/README.md) | [代码分析](./researches/autoglm/06-source-code-analysis.md) |
 | **GUI-Owl** | 阿里通义 | 32B | 端到端多模态，全场景支持 | [查看报告](./researches/GUI-Owl/README.md) | [代码分析](./researches/GUI-Owl/code-analysis.md) |
 | **Step-GUIEdge** | 阶跃星辰 | 4B/8B | 首个支持手机部署的端侧模型 | [查看报告](./researches/Step-GUIEdge/README.md) | [代码分析](./researches/Step-GUIEdge/code-analysis.md) |
+| **Mobile-Agent** | 阿里通义 | 7B/32B | 多智能体协作框架，跨平台支持 | [查看报告](./researches/Mobile-Agent/README.md) | [代码分析](./researches/Mobile-Agent/code-analysis.md) |
 
 ### 二、专题深度调研
 
