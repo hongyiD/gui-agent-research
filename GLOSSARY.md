@@ -13,7 +13,7 @@
 
 **AndroidWorld** 是一个在真实 Android 模拟器上运行的动态评测环境，用于构建和评估自主计算机控制智能体。它包含 116 个跨越 20 个真实应用的手工设计任务，并通过动态参数实例化，可生成数百万种独特的任务变体。
 
-![AndroidWorld 架构图](https://github.com/X-PLUG/MobileAgent/raw/main/Mobile-Agent-v3/android_world_v3/docs/images/overview.png)
+![AndroidWorld 架构图](https://github.com/X-PLUG/MobileAgent/blob/main/Mobile-Agent-v3/android_world_v3/assets/overview.png)
 
 **核心特性**：
 
