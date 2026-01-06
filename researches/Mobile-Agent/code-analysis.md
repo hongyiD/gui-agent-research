@@ -1,8 +1,7 @@
-
 # Mobile-Agent 深度代码解构
 
 > **作者**: Damon Li  
-> **更新日期**: 2026年1月
+> **更新日期**: 2026年1月6日
 
 本报告对 [X-PLUG/MobileAgent](https://github.com/X-PLUG/MobileAgent) 项目进行深度代码解构，重点分析其核心组件 **Mobile-Agent-v3** 和 **GUI-Owl** 的实现细节。
 
@@ -19,6 +18,7 @@ MobileAgent/
 │   │       └── agents/
 │   │           ├── gui_owl.py        # GUI-Owl 模型的核心实现
 │   │           ├── mobile_agent_v3.py  # Mobile-Agent-v3 多智能体框架实现
+│   │           ├── mobile_agent_v3_agent.py  # 多智能体定义
 │   │           └── new_json_action.py  # 动作空间定义
 │   ├── mobile_v3/                  # 在真实设备上运行 v3 的代码
 │   │   ├── run_mobileagentv3.py    # 主运行脚本
@@ -33,18 +33,162 @@ MobileAgent/
 └── README.md                       # 主项目 README
 ```
 
-## 2. 核心工作流解析 (`run_mobileagentv3.py`)
+## 2. 核心架构：多智能体协作框架
 
-`mobile_v3/run_mobileagentv3.py` 是在真实设备上启动 Mobile-Agent-v3 的入口脚本。其核心逻辑是一个循环，在每个步骤中依次调用 Manager、Executor 和 Reflector。
+Mobile-Agent v3 采用了创新的多智能体协作架构，包含四个专门化的智能体：
+
+### 2.1 InfoPool（信息池）
+
+`InfoPool` 是整个系统的核心数据结构，负责在多个智能体之间共享状态和信息。
 
 ```python
-# run_mobileagentv3.py
+@dataclass
+class InfoPool:
+    """跨智能体信息共享池"""
+    
+    # 用户输入和知识
+    instruction: str = ""                    # 用户指令
+    additional_knowledge_manager: str = ""   # Manager 额外知识
+    additional_knowledge_executor: str = ""  # Executor 额外知识
+    
+    # 工作记忆
+    summary_history: list = field(default_factory=list)   # 动作描述历史
+    action_history: list = field(default_factory=list)    # 动作历史
+    action_outcomes: list = field(default_factory=list)   # 动作结果 (A/B/C)
+    error_descriptions: list = field(default_factory=list) # 错误描述
+    
+    # 规划状态
+    plan: str = ""                    # 当前计划
+    completed_plan: str = ""          # 已完成的子目标
+    important_notes: str = ""         # 重要笔记
+    
+    # 错误处理
+    error_flag_plan: bool = False     # 是否需要重新规划
+    err_to_manager_thresh: int = 2    # 连续错误阈值
+```
 
-def run_instruction(...):
+### 2.2 Manager（管理者）
+
+Manager 负责高层规划，将复杂任务分解为子目标，并根据执行情况动态调整计划。
+
+**核心职责**：
+- 首次规划：根据用户指令制定高层计划
+- 进度跟踪：记录已完成的子目标
+- 错误升级：当 Executor 连续失败时，重新规划
+
+**关键代码逻辑**：
+
+```python
+class Manager(BaseAgent):
+    def get_prompt(self, info_pool: InfoPool) -> str:
+        if info_pool.plan == "":
+            # 首次规划
+            prompt += "Make a high-level plan to achieve the user's request..."
+        else:
+            # 进度检查和计划更新
+            prompt += f"### Historical Operations ###\n{info_pool.completed_plan}"
+            prompt += f"### Plan ###\n{info_pool.plan}"
+            
+            if info_pool.error_flag_plan:
+                # 错误升级：提供最近失败的动作日志
+                prompt += "### Potentially Stuck! ###\n"
+                for act, summ, err_des in zip(recent_actions, recent_summaries, recent_err_des):
+                    prompt += f"- Attempt: Action: {act} | Outcome: Failed | Feedback: {err_des}\n"
+```
+
+**输出格式**：
+```
+### Thought ###
+规划理由和分析
+
+### Historical Operations ###
+已完成的子目标列表
+
+### Plan ###
+1. 第一个子目标
+2. 第二个子目标
+...
+```
+
+### 2.3 Executor（执行者）
+
+Executor 负责根据当前计划和屏幕状态，选择并执行具体的原子动作。
+
+**支持的原子动作**：
+
+| 动作类型 | 参数 | 描述 |
+|---------|------|------|
+| `click` | `coordinate: [x, y]` | 点击指定坐标 |
+| `long_press` | `coordinate: [x, y]` | 长按指定坐标 |
+| `type` | `text: string` | 在激活的输入框中输入文本 |
+| `swipe` | `coordinate, coordinate2` | 从起点滑动到终点 |
+| `open_app` | `text: app_name` | 打开指定应用 |
+| `system_button` | `button: Home/Back/Enter` | 按系统按钮 |
+| `answer` | `text: string` | 回答用户问题 |
+
+**关键代码逻辑**：
+
+```python
+class Executor(BaseAgent):
+    def get_prompt(self, info_pool: InfoPool) -> str:
+        prompt += f"### Overall Plan ###\n{info_pool.plan}"
+        prompt += f"### Current Subgoal ###\n{truncated_current_goal}"
+        
+        # 最近动作历史（最多5条）
+        prompt += "### Latest Action History ###\n"
+        for act, summ, outcome, err_des in zip(...):
+            if outcome == "A":
+                prompt += f"Action: {act} | Outcome: Successful\n"
+            else:
+                prompt += f"Action: {act} | Outcome: Failed | Feedback: {err_des}\n"
+```
+
+### 2.4 ActionReflector（动作反思者）
+
+ActionReflector 负责验证上一个动作是否成功执行，并提供错误反馈。
+
+**输出分类**：
+- **A**: 成功或部分成功
+- **B**: 失败，进入了错误页面，需要返回
+- **C**: 失败，动作没有产生任何变化
+
+```python
+class ActionReflector(BaseAgent):
+    def get_prompt(self, info_pool: InfoPool) -> str:
+        prompt += "### Latest Action ###\n"
+        prompt += f"Action: {info_pool.last_action}\n"
+        prompt += f"Expectation: {info_pool.last_summary}\n"
+        
+        prompt += "### Outcome ###\n"
+        prompt += "A: Successful or Partially Successful\n"
+        prompt += "B: Failed. Wrong page, need to return\n"
+        prompt += "C: Failed. No changes produced\n"
+```
+
+### 2.5 Notetaker（笔记员）
+
+Notetaker 负责记录任务执行过程中的重要信息，如需要记住的数字、名称等。
+
+```python
+class Notetaker(BaseAgent):
+    def get_prompt(self, info_pool: InfoPool) -> str:
+        prompt += f"### Existing Important Notes ###\n{info_pool.important_notes}"
+        prompt += "Carefully examine the information above to identify any important content..."
+```
+
+## 3. 核心工作流解析 (`run_mobileagentv3.py`)
+
+`mobile_v3/run_mobileagentv3.py` 是在真实设备上启动 Mobile-Agent-v3 的入口脚本。
+
+```python
+def run_instruction(adb_path, hdc_path, api_key, base_url, model, instruction, ...):
     # 1. 初始化设备控制器 (Android/HarmonyOS)
-    controller = AndroidController(adb_path) 
+    if adb_path:
+        controller = AndroidController(adb_path)
+    else:
+        controller = HarmonyOSController(hdc_path)
 
-    # 2. 初始化信息池 (InfoPool) 和四个智能体
+    # 2. 初始化信息池和四个智能体
     info_pool = InfoPool(...)
     vllm = GUIOwlWrapper(api_key, base_url, model)
     manager = Manager()
@@ -55,95 +199,164 @@ def run_instruction(...):
     # 3. 主循环，最多执行 max_step 次
     for step in range(max_step):
         # 3.1 获取当前屏幕截图
-        controller.get_screenshot(...)
+        controller.get_screenshot(local_image_dir)
+        
+        # 3.2 错误升级检查
+        if len(info_pool.action_outcomes) >= err_to_manager_thresh:
+            latest_outcomes = info_pool.action_outcomes[-err_to_manager_thresh:]
+            if all(outcome in ["B", "C"] for outcome in latest_outcomes):
+                info_pool.error_flag_plan = True
 
-        # 3.2 调用 Manager 进行规划
-        # 如果连续出错，会触发重新规划
-        prompt_planning = manager.get_prompt(info_pool)
-        output_planning, ... = vllm.predict_mm(prompt_planning, [screenshot])
-        parsed_result_planning = manager.parse_response(output_planning)
-        info_pool.plan = parsed_result_planning['plan']
+        # 3.3 调用 Manager 进行规划
+        if not skip_manager:
+            prompt_planning = manager.get_prompt(info_pool)
+            output_planning = vllm.predict_mm(prompt_planning, [screenshot])
+            info_pool.plan = manager.parse_response(output_planning)['plan']
 
         # 如果计划完成，则退出
         if "Finished" in info_pool.plan:
             break
 
-        # 3.3 调用 Executor 生成具体动作
+        # 3.4 调用 Executor 生成具体动作
         prompt_action = executor.get_prompt(info_pool)
-        output_action, ... = vllm.predict_mm(prompt_action, [screenshot])
-        parsed_result_action = executor.parse_response(output_action)
-        action_object = json.loads(parsed_result_action['action'])
+        output_action = vllm.predict_mm(prompt_action, [screenshot])
+        action = executor.parse_response(output_action)['action']
 
-        # 3.4 执行动作 (click, swipe, type, ...)
-        controller.tap(action_object['coordinate'][0], ...)
+        # 3.5 执行动作
+        execute_action(controller, json.loads(action))
 
-        # 3.5 获取动作执行后的屏幕截图
-        controller.get_screenshot(...)
+        # 3.6 获取动作后截图
+        controller.get_screenshot(after_screenshot)
 
-        # 3.6 调用 Action Reflector 进行反思
-        prompt_action_reflect = action_reflector.get_prompt(info_pool)
-        output_action_reflect, ... = vllm.predict_mm(prompt_action_reflect, [before_screenshot, after_screenshot])
-        parsed_result_action_reflect = action_reflector.parse_response(output_action_reflect)
-        outcome = parsed_result_action_reflect['outcome'] # "A", "B", or "C"
+        # 3.7 调用 ActionReflector 进行反思
+        prompt_reflect = action_reflector.get_prompt(info_pool)
+        output_reflect = vllm.predict_mm(prompt_reflect, [before, after])
+        outcome = action_reflector.parse_response(output_reflect)['outcome']
+        info_pool.action_outcomes.append(outcome)
 
-        # 3.7 如果动作成功，调用 Notetaker 记录关键信息
+        # 3.8 如果成功且启用 Notetaker
         if outcome == "A" and if_notetaker:
             prompt_note = notetaker.get_prompt(info_pool)
-            output_note, ... = vllm.predict_mm(prompt_note, [after_screenshot])
-            ...
+            output_note = vllm.predict_mm(prompt_note, [after_screenshot])
+            info_pool.important_notes = notetaker.parse_response(output_note)['important_notes']
 ```
 
-## 3. 多智能体框架解析 (`mobile_agent_e.py`)
+## 4. 错误处理机制
 
-`mobile_v3/utils/mobile_agent_e.py` 定义了 Mobile-Agent-v3 的核心多智能体框架。
+Mobile-Agent v3 实现了智能的错误处理机制：
 
-### 3.1 `InfoPool` 数据类
+### 4.1 动作级错误处理
 
-`InfoPool` 是一个贯穿所有智能体的数据中心，用于存储和共享任务状态和历史信息。
+ActionReflector 检测每个动作的执行结果，分为三种状态：
+- **A (成功)**: 动作达到预期效果
+- **B (错误页面)**: 进入了错误的页面，需要返回
+- **C (无变化)**: 动作没有产生任何变化
 
--   **用户输入**: `instruction`
--   **工作记忆**: `summary_history`, `action_history`, `action_outcomes`
--   **规划信息**: `plan`, `completed_plan`
--   **长时记忆**: `important_notes`
+### 4.2 错误升级机制
 
-### 3.2 `Manager` (管理者)
+当连续 2 次失败后，将错误信息升级给 Manager 进行重新规划：
 
--   **`get_prompt()`**: 构建用于规划的 prompt。首次调用时，它要求模型制定一个高层计划。后续调用时，它会提供历史操作、当前计划、上次动作和结果，要求模型评估并更新计划。
--   **`parse_response()`**: 从模型的响应中解析出 `thought`（思考过程）、`completed_subgoal`（已完成的子目标）和 `plan`（更新后的计划）。
+```python
+# 错误升级检查
+if len(info_pool.action_outcomes) >= err_to_manager_thresh:
+    latest_outcomes = info_pool.action_outcomes[-err_to_manager_thresh:]
+    if all(outcome in ["B", "C"] for outcome in latest_outcomes):
+        info_pool.error_flag_plan = True  # 触发 Manager 重新规划
+```
 
-### 3.3 `Executor` (执行者)
+### 4.3 无效动作跳过
 
--   **`get_prompt()`**: 构建用于生成具体动作的 prompt。它向模型提供用户请求、整体计划、当前子目标、历史动作和结果，要求模型选择一个原子动作。
--   **`parse_response()`**: 从模型的响应中解析出 `thought`、`action`（JSON 格式的动作）和 `description`（动作描述）。
+如果上一个动作是无效的（解析失败），跳过 Manager，直接让 Executor 重试：
 
-### 3.4 `ActionReflector` (动作反思者)
+```python
+if not info_pool.error_flag_plan and len(info_pool.action_history) > 0:
+    if info_pool.action_history[-1]['action'] == 'invalid':
+        skip_manager = True
+```
 
--   **`get_prompt()`**: 构建用于反思的 prompt。它向模型提供用户请求、上次执行的动作、期望的结果，以及动作前后的两张屏幕截图。
--   **`parse_response()`**: 从模型的响应中解析出 `outcome`（结果，A/B/C 三种状态）和 `error_description`（如果失败，提供错误描述）。
+## 5. GUI-Owl 模型集成
 
-### 3.5 `Notetaker` (记录员)
+`android_world_v3/android_world/agents/gui_owl.py` 是 GUI-Owl 模型在 AndroidWorld 环境中的具体实现。
 
--   **`get_prompt()`**: 构建用于记录笔记的 prompt。它向模型提供用户请求、当前进度和已有的笔记，要求模型从当前屏幕中提取并更新重要信息。
--   **`parse_response()`**: 从模型的响应中解析出更新后的 `important_notes`。
+### 5.1 核心 step() 方法
 
-## 4. 核心模型实现 (`gui_owl.py`)
+```python
+class GUIOwlAgent(base_agent.EnvironmentInteractingAgent):
+    def step(self, goal: str) -> AgentInteractionResult:
+        # 1. 获取截图
+        state = self.get_post_transition_state()
+        screenshot = state.pixels.copy()
+        
+        # 2. 构建 prompt
+        prompt = self._build_prompt(goal, self.action_history)
+        
+        # 3. 调用模型
+        response = self.vllm.predict_mm(prompt, [screenshot_path])
+        
+        # 4. 解析动作
+        action = self._parse_action(response)
+        
+        # 5. 执行动作
+        self.env.execute_action(action)
+        
+        return AgentInteractionResult(done, info)
+```
 
-`android_world_v3/android_world/agents/gui_owl.py` 是 GUI-Owl 模型在 AndroidWorld 环境中的具体实现。它继承自 `base_agent.EnvironmentInteractingAgent`。
+### 5.2 动作转换
 
--   **`step()` 方法**: 这是智能体与环境交互的核心。它接收 `goal` 作为输入，然后执行以下操作：
-    1.  获取当前屏幕截图和 UI 元素。
-    2.  构建适用于 GUI-Owl 模型的 prompt，这个 prompt 包含了任务目标、历史动作和当前截图。
-    3.  调用 VLLM 服务（`self.vllm.predict_mm`）获取模型的动作预测。
-    4.  解析模型返回的动作（一个包含 `action` 和 `arguments` 的 JSON 对象）。
-    5.  将模型生成的动作转换为环境可以执行的 `JSONAction`。
-    6.  通过 `actuation.execute_adb_action` 在设备上执行该动作。
-    7.  记录动作、思考过程和总结，为下一步做准备。
+```python
+def convert_fc_action_to_json_action(dummy_action) -> JSONAction:
+    action_json = json.loads(dummy_action)
+    action_type = action_json['action']
+    
+    if action_type == 'click':
+        return JSONAction(
+            action_type=CLICK,
+            x=action_json['coordinate'][0],
+            y=action_json['coordinate'][1]
+        )
+    elif action_type == 'swipe':
+        return JSONAction(
+            action_type=SWIPE,
+            direction=[start_x, start_y, end_x, end_y]
+        )
+    # ... 其他动作类型
+```
 
--   **动作转换**: `mobile_agent_utils.convert_mobile_agent_action_to_json_action` 函数负责将 GUI-Owl 输出的动作格式（如 `{'action': 'click', 'target': 'button "OK"'}`）转换为 AndroidWorld 环境可以理解的、基于坐标的 `JSONAction`。
+## 6. 设备控制层
 
-## 5. 动作空间定义 (`new_json_action.py`)
+### 6.1 Android 控制器
 
-`android_world_v3/android_world/agents/new_json_action.py` 定义了智能体可以执行的所有原子动作的常量。
+```python
+class AndroidController:
+    def __init__(self, adb_path):
+        self.adb_path = adb_path
+        
+    def get_screenshot(self, save_path):
+        os.system(f"{self.adb_path} exec-out screencap -p > {save_path}")
+        
+    def tap(self, x, y):
+        os.system(f"{self.adb_path} shell input tap {x} {y}")
+        
+    def swipe(self, x1, y1, x2, y2, duration=300):
+        os.system(f"{self.adb_path} shell input swipe {x1} {y1} {x2} {y2} {duration}")
+```
+
+### 6.2 HarmonyOS 控制器
+
+```python
+class HarmonyOSController:
+    def __init__(self, hdc_path):
+        self.hdc_path = hdc_path
+        
+    def get_screenshot(self, save_path):
+        os.system(f"{self.hdc_path} shell snapshot_display -f /data/local/tmp/screenshot.png")
+        os.system(f"{self.hdc_path} file recv /data/local/tmp/screenshot.png {save_path}")
+```
+
+## 7. 动作空间定义
+
+`new_json_action.py` 定义了所有原子动作常量：
 
 | 动作常量 | 描述 |
 |---|---|
@@ -157,6 +370,54 @@ def run_instruction(...):
 | `ANSWER` | 回答问题 |
 | `TERMINATE` / `STATUS` | 结束任务 |
 
-## 6. 总结
+## 8. 使用示例
 
-Mobile-Agent-v3 的代码实现清晰地展示了其多智能体协作的架构。通过将任务分解为规划、执行、反思和记录等多个环节，并为每个环节设计专门的智能体和 prompt，该框架显著提升了在复杂 GUI 任务上的表现。其核心驱动力是强大的 GUI-Owl 模型，而 `run_mobileagentv3.py` 中的主循环则是整个框架的“指挥中心”，协调各个智能体完成用户指令。
+### 8.1 命令行运行
+
+```bash
+python run_mobileagentv3.py \
+    --adb_path /path/to/adb \
+    --api_key your_api_key \
+    --base_url http://localhost:8000/v1 \
+    --model GUI-Owl-32B \
+    --instruction "打开微信，发送消息给张三" \
+    --max_step 25
+```
+
+### 8.2 Python API 调用
+
+```python
+from utils.mobile_agent_e import InfoPool, Manager, Executor
+from utils.call_mobile_agent_e import GUIOwlWrapper
+
+# 初始化
+vllm = GUIOwlWrapper(api_key, base_url, model)
+info_pool = InfoPool(instruction="打开设置，开启蓝牙")
+
+# 规划
+manager = Manager()
+plan_output = vllm.predict_mm(manager.get_prompt(info_pool), [screenshot])
+info_pool.plan = manager.parse_response(plan_output)['plan']
+
+# 执行
+executor = Executor()
+action_output = vllm.predict_mm(executor.get_prompt(info_pool), [screenshot])
+action = executor.parse_response(action_output)['action']
+```
+
+## 9. 总结
+
+Mobile-Agent v3 的多智能体协作架构是其核心创新：
+
+| 智能体 | 职责 | 调用频率 |
+|-------|------|---------|
+| **Manager** | 高层规划、进度跟踪、错误升级处理 | 每步调用（除非跳过） |
+| **Executor** | 选择和执行原子动作 | 每步调用 |
+| **ActionReflector** | 验证动作结果、提供错误反馈 | 每步调用 |
+| **Notetaker** | 记录重要信息 | 可选调用 |
+
+这种架构的优势：
+1. **职责分离**：每个智能体专注于特定任务，提高了系统的可维护性
+2. **错误恢复**：多层次的错误处理机制，提高了任务成功率
+3. **信息共享**：InfoPool 实现了跨智能体的状态共享
+4. **灵活扩展**：可以轻松添加新的智能体或修改现有智能体的行为
