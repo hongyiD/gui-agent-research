@@ -834,7 +834,7 @@ $$
 r_{\text{point}} = \exp\left(-\left(\hat{\delta}_x^4 + \hat{\delta}_y^4\right)\right)
 $$
 
-其中 $\hat{\delta}_k = |k_{\text{pred}} - k_{\text{gt}}| / \tau_k$
+其中 $$\hat{\delta}_k = |k_{\text{pred}} - k_{\text{gt}}| / \tau_k$$
 
 **2) 边界框奖励 (BBox-based Reward)**：
 
@@ -853,7 +853,7 @@ $$
 其中 $\alpha = 0.8$ 优先考虑几何中心性，同时保留 IoU 作为形状一致性正则化。
 
 **3) 动作语义混合奖励**：
-- **稀疏动作类型**：二元奖励 $\mathbb{I}(\hat{a}_{\text{type}} = a_{\text{type}}^*)$
+- **稀疏动作类型**：二元奖励 $$\mathbb{I}(\hat{a}_{\text{type}} = a_{\text{type}}^*)$$
 - **自适应值建模**：
   - 轨迹向量（如 SLIDE）：余弦相似度
   - 语义动作（如 INFO, TYPE）：LLM 验证内容相关性
@@ -1305,7 +1305,7 @@ $$
    - KL 散度保持低位且稳定：策略更新在安全信任域内
 
 3. **尾部风险抑制**：
-   - K3-KL 估计器（$E[e^\Delta - \Delta - 1]$）持续下降（0.45 → 0.30）
+   - K3-KL 估计器（$$E[e^\Delta - \Delta - 1]$$）持续下降（0.45 → 0.30）
    - 证明：模型逐步最小化极端偏离，更新保守
 
 4. **方差缩减**：
@@ -1398,13 +1398,15 @@ graph LR
 **公式化**：
 
 第 $k$ 轮生成轨迹：
+
 $$
 \mathcal{T}^{(k)} = \text{Rollout}(M^{(k)}, \mathcal{Q})
 $$
 
-包含端到端输出 $\mathcal{T}_{\text{E2E}}^{(k)}$ 和角色特定输出 $\mathcal{T}_{\text{Role}}^{(k)}$
+包含端到端输出 $$\mathcal{T}_{\text{E2E}}^{(k)}$ 和角色特定输出 $\mathcal{T}_{\text{Role}}^{(k)}$$
 
 第 $k+1$ 轮训练：
+
 $$
 M^{(k+1)} = \text{Train}(M^{(k)}, \mathcal{T}_{\text{filtered}}^{(k)})
 $$
@@ -1422,6 +1424,7 @@ $$
 **迭代采样数据流**：
 
 第 $t+1$ 轮的训练数据：
+
 $$
 \mathcal{D}^{(t+1)} = \mathcal{D}_{\text{RS}}^{(t+1)} \cup \mathcal{D}_{\text{synthesis}}
 $$
