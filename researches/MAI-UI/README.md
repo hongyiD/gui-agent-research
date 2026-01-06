@@ -81,6 +81,7 @@ MAI-UI 在多个主流的 GUI 基础能力和导航能力基准上取得了业�
 | [code-analysis.md](./code-analysis.md) | MAI-UI 深度代码解构，分析核心模块和源码实现 |
 | [model-features.md](./model-features.md) | MAI-UI 模型层面特点深度分析，包括全尺寸模型家族、自进化数据管线、在线强化学习框架等 |
 | [deployment-guide.md](./deployment-guide.md) | MAI-UI 工程化部署全流程指南，从环境准备到客户端集成 |
+| [full.md](./full.md) | MAI-UI 全尺寸模型 (2B/8B/32B/235B-A22B) 性能评分详解，包含各基准测试的完整数据 |
 
 ## 9. 相关图片 URL
 
