@@ -1,7 +1,7 @@
 # GUI Agent 技术深度调研
 
 > **作者**: Damon Li  
-> **更新日期**: 2026年1月6日
+> **更新日期**: 2026年1月7日
 
 本仓库包含对主流 GUI 智能体（GUI Agent）技术的深度调研报告，涵盖学术论文分析、开源代码解读、技术架构对比等内容。
 
@@ -21,6 +21,9 @@
 | **GUI-Owl** | 阿里通义 | 强大的视觉语言模型 | 依赖 Mobile-Agent-v3 框架 | Qwen2.5-VL | 自建 GUI 数据集 | SFT | 7B/32B |
 | **Step-GUIEdge** | 阶跃星辰 | 端侧部署，轻量化 | 性能受限 | Step-1.5V | 自建数据集 | SFT | 4B/8B |
 | **MobiAgent** | 上交 IPADS | AgentRR 加速，可定制性强 | 依赖多个组件 | Qwen2.5-VL | MobiMind (自建) | SFT | 4B/7B/8B |
+| **Droidrun** | Droidrun 社区 | 模块化框架，支持 iOS | 依赖外部 LLM | 任意 VLM | 无需训练 | 零样本 | - |
+| **AppAgent** | 腾讯 | 自主探索学习，知识积累 | 单智能体架构 | GPT-4V | 自主探索生成 | 零样本 | - |
+| **mobile-use** | Minitap AI | 多智能体，跨平台，数据抓取 | 架构较重 | 任意 VLM | 无需训练 | 零样本 | - |
 
 **注**：**Mobile-Agent-v3** 是一个多智能体**框架**，它使用 **GUI-Owl** 作为其核心**模型**。因此，在选型时，应将两者视为一个整体方案。
 
@@ -46,6 +49,9 @@
 | **GUI-Owl & Mobile-Agent-v3** | [查看报告](./researches/Mobile-Agent/README.md) | [代码分析](./researches/Mobile-Agent/code-analysis.md) |
 | **Step-GUIEdge** | [查看报告](./researches/Step-GUIEdge/README.md) | [代码分析](./researches/Step-GUIEdge/code-analysis.md) |
 | **MobiAgent** | [查看报告](./researches/MobiAgent/README.md) | [代码分析](./researches/MobiAgent/code-analysis.md) |
+| **Droidrun** | [查看报告](./researches/Droidrun/README.md) | [代码分析](./researches/Droidrun/code-analysis.md) |
+| **AppAgent** | [查看报告](./researches/AppAgent/README.md) | [代码分析](./researches/AppAgent/code-analysis.md) |
+| **mobile-use** | [查看报告](./researches/mobile-use/README.md) | [代码分析](./researches/mobile-use/code-analysis.md) |
 
 ## 🏗️ 项目结构
 
@@ -61,6 +67,9 @@ gui-agent-research/
 │   ├── Mobile-Agent/           # GUI-Owl & Mobile-Agent-v3 调研
 │   ├── Step-GUIEdge/           # Step-GUIEdge 模型调研
 │   ├── MobiAgent/              # MobiAgent 模型调研
+│   ├── Droidrun/               # Droidrun 框架调研
+│   ├── AppAgent/               # AppAgent 框架调研
+│   ├── mobile-use/             # mobile-use 框架调研
 │   └── ...
 └── presentation/               # 技术演示 PPT
 ```
