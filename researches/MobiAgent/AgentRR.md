@@ -170,7 +170,7 @@ tree = ActionTree(env, agent, Action,
 3. **动态嵌入计算**：系统采用预计算+动态重计算策略，平衡内存使用和计算效率 [15](#0-14) 。
 
 Wiki pages you might want to explore:
-- [Metrics and Performance Analysis (IPADS-SAI/MobiAgent)](/wiki/IPADS-SAI/MobiAgent#7.2)
+- [Metrics and Performance Analysis (IPADS-SAI/MobiAgent)](https://deepwiki.com/IPADS-SAI/MobiAgent/7.2-metrics-and-performance-analysis)
 
 ### Citations
 
