@@ -1,1 +1,6 @@
 upstream/
+dataset/
+.docs/
+
+.DS_Store
+**/.DS_Store

@@ -1,0 +1,35 @@
+# Configuration for trajectory.jsonl to SFT conversion
+# Usage: python process_trajectory_jsonl.py --config trajectory_config.yaml
+
+# Input path (trajectory.jsonl file or directory containing trajectories)
+input: "../../dataset/20260119_201327/trajectory.jsonl"
+
+# Output path (JSONL file for single input, or directory for batch processing)
+output: "../../dataset/processed/sft_train.jsonl"
+
+# Image format: "base64" (embedded in JSON) or "path" (file paths only)
+# Use "base64" for direct training compatibility
+# Use "path" for faster processing and smaller files
+image_format: "base64"
+
+# Maximum samples per trajectory (-1 for all steps)
+max_samples: -1
+
+# Image processing options
+image_processing:
+  # Maximum image dimensions (width, height) for resizing, null for original
+  max_size: null  # e.g., [1920, 1080]
+
+  # JPEG quality for compression (0-100), only applicable if format is changed
+  jpeg_quality: 95
+
+# Filtering options
+filtering:
+  # Only include successful steps
+  only_successful: true
+
+  # Minimum step index to include (0-indexed)
+  min_step: 0
+
+  # Maximum step index to include (-1 for no limit)
+  max_step: -1

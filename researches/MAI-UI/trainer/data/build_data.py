@@ -56,6 +56,44 @@ def load_image_as_base64(image_path: str, resize: tuple[int, int] | None = None)
     return base64.b64encode(img_bytes).decode("utf-8")
 
 
+def find_screenshot_path(log_dir: str, task_name: str, step: int) -> str | None:
+    """Find screenshot path for a given step.
+    
+    Tries multiple naming patterns:
+    1. {task_name}-0-{step}.png (standard format)
+    2. Searches all screenshots matching step number
+    
+    Returns:
+        Path to screenshot file if found, None otherwise.
+    """
+    screenshots_dir = os.path.join(log_dir, "screenshots")
+    if not os.path.exists(screenshots_dir):
+        return None
+    
+    # Try standard format first: {task_name}-0-{step}.png
+    standard_path = os.path.join(screenshots_dir, f"{task_name}-0-{step}.png")
+    if os.path.exists(standard_path):
+        return standard_path
+    
+    # Fallback: search for any screenshot matching the step number
+    try:
+        screenshots = [f for f in os.listdir(screenshots_dir) if f.endswith(".png")]
+        for filename in screenshots:
+            # Extract step number from filename (format: TaskName-0-stepnum.png)
+            try:
+                parts = filename.rsplit("-", 1)
+                if len(parts) == 2:
+                    file_step = int(parts[1].replace(".png", ""))
+                    if file_step == step:
+                        return os.path.join(screenshots_dir, filename)
+            except (ValueError, IndexError):
+                continue
+    except OSError:
+        pass
+    
+    return None
+
+
 def build_prompt_from_trajectory(
     task_goal: str,
     history_steps: list[dict],
@@ -64,6 +102,7 @@ def build_prompt_from_trajectory(
     include_images: bool = True,
     image_format: str = "path",
     log_dir: str | None = None,
+    task_name: str | None = None,
 ) -> str:
     """Build prompt following MAI-UI format."""
     prompt_parts = []
@@ -119,8 +158,13 @@ For each function call, return the thinking process in <thinking> </thinking> ta
     # Current observation
     prompt_parts.append("## Current Observation\n")
     if include_images and log_dir:
-        screenshot_path = os.path.join(log_dir, "screenshots", f"{current_step.get('step', 0)}.png")
-        if os.path.exists(screenshot_path):
+        step = current_step.get("step", 0)
+        # Extract task_name from log_dir if not provided
+        if task_name is None:
+            task_name = os.path.basename(log_dir)
+        
+        screenshot_path = find_screenshot_path(log_dir, task_name, step)
+        if screenshot_path and os.path.exists(screenshot_path):
             if image_format == "base64":
                 img_b64 = load_image_as_base64(screenshot_path)
                 prompt_parts.append(f"<image_base64>{img_b64}</image_base64>")
@@ -162,6 +206,7 @@ def process_trajectory(
     
     samples = []
     task_goal = traj_steps[0].get("task_goal", "") if traj_steps else ""
+    task_name = os.path.basename(task_folder)
     
     for i, step in enumerate(traj_steps):
         history = traj_steps[:i]
@@ -173,6 +218,7 @@ def process_trajectory(
             include_images=config["image_processing"]["include_images"],
             image_format=config["image_processing"]["image_format"],
             log_dir=task_folder,
+            task_name=task_name,
         )
         response = build_response_from_step(step)
         

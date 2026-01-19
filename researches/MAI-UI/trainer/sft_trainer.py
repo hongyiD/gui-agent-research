@@ -62,38 +62,79 @@ def merge_args_with_config(args: argparse.Namespace, config: dict) -> dict:
 
 
 def tokenize_function(examples, tokenizer, max_length: int):
-    """Tokenize examples with proper prompt/response masking."""
+    """Tokenize examples with proper prompt/response masking.
+    
+    This function correctly handles tokenization by:
+    1. Tokenizing prompt and response separately to get accurate lengths
+    2. Properly masking prompt tokens with -100 (not used for loss)
+    3. Keeping response tokens for loss computation
+    4. Handling padding and truncation correctly
+    """
     prompts = examples["prompt"]
     responses = examples["response"]
     
-    # Combine prompt and response
-    texts = [f"{prompt}{response}" for prompt, response in zip(prompts, responses)]
+    input_ids_list = []
+    attention_mask_list = []
+    labels_list = []
     
-    # Tokenize
-    tokenized = tokenizer(
-        texts,
-        truncation=True,
-        padding="max_length",
-        max_length=max_length,
-        return_tensors=None,
-    )
-    
-    # Create labels: mask prompt tokens with -100, keep response tokens
-    labels = []
-    for i, text in enumerate(texts):
-        prompt_len = len(tokenizer.encode(prompts[i], add_special_tokens=False))
-        response_len = len(tokenizer.encode(responses[i], add_special_tokens=False))
+    for prompt, response in zip(prompts, responses):
+        # Tokenize prompt and response separately
+        prompt_tokens = tokenizer(
+            prompt,
+            add_special_tokens=True,
+            truncation=False,
+            padding=False,
+            return_tensors=None,
+        )
         
-        label = [-100] * prompt_len + tokenized["input_ids"][i][prompt_len : prompt_len + response_len]
+        response_tokens = tokenizer(
+            response,
+            add_special_tokens=False,
+            truncation=False,
+            padding=False,
+            return_tensors=None,
+        )
+        
+        prompt_input_ids = prompt_tokens["input_ids"]
+        response_input_ids = response_tokens["input_ids"]
+        
+        # Combine prompt and response
+        full_input_ids = prompt_input_ids + response_input_ids
+        
+        # Truncate if too long
+        if len(full_input_ids) > max_length:
+            # Keep full prompt, truncate response
+            available_response_len = max_length - len(prompt_input_ids)
+            if available_response_len > 0:
+                response_input_ids = response_input_ids[:available_response_len]
+                full_input_ids = prompt_input_ids + response_input_ids
+            else:
+                # Prompt itself is too long, truncate prompt
+                full_input_ids = prompt_input_ids[:max_length]
+                response_input_ids = []
+        
+        # Create labels: mask prompt with -100, keep response
+        labels = [-100] * len(prompt_input_ids) + response_input_ids
+        
+        # Create attention mask (all 1s for non-padded tokens)
+        attention_mask = [1] * len(full_input_ids)
         
         # Pad to max_length
-        while len(label) < max_length:
-            label.append(-100)
+        padding_length = max_length - len(full_input_ids)
+        if padding_length > 0:
+            full_input_ids = full_input_ids + [tokenizer.pad_token_id] * padding_length
+            attention_mask = attention_mask + [0] * padding_length
+            labels = labels + [-100] * padding_length
         
-        labels.append(label[:max_length])
+        input_ids_list.append(full_input_ids)
+        attention_mask_list.append(attention_mask)
+        labels_list.append(labels)
     
-    tokenized["labels"] = labels
-    return tokenized
+    return {
+        "input_ids": input_ids_list,
+        "attention_mask": attention_mask_list,
+        "labels": labels_list,
+    }
 
 
 def main() -> None:

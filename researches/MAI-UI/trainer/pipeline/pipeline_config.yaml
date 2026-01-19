@@ -1,0 +1,101 @@
+# End-to-End Pipeline Configuration for MAI-UI Training
+# This config orchestrates data preprocessing, training, and evaluation
+
+checkpoint_dir: "./pipeline_checkpoints"
+log_dir: "./pipeline_logs"
+
+stages:
+  # Stage 1: Data Preprocessing
+  - name: "data_preprocessing"
+    description: "Process raw trajectory data into training format"
+    script: "data/unified_data_processor.py"
+    enabled: true
+    allow_failure: false
+    depends_on: []
+    args:
+      input: "../../dataset/20260119_201327"
+      output: "../../dataset/processed/sft_train.jsonl"
+      output-format: "prompt_response"
+      image-format: "base64"
+      compress-images: true
+      image-quality: 85
+
+  # Stage 2: Data Validation
+  - name: "data_validation"
+    description: "Validate processed training data"
+    script: "data/format_validators.py"
+    enabled: true
+    allow_failure: false
+    depends_on: ["data_preprocessing"]
+    args:
+      file: "../../dataset/processed/sft_train.jsonl"
+      format: "prompt_response"
+
+  # Stage 3: SFT Training
+  - name: "sft_training"
+    description: "Supervised fine-tuning on processed data"
+    script: "sft_trainer.py"
+    enabled: true
+    allow_failure: false
+    depends_on: ["data_validation"]
+    args:
+      config: "configs/sft_config.yaml"
+      data_path: "../../dataset/processed/sft_train.jsonl"
+      output_dir: "./models/sft_model"
+
+  # Stage 4: SFT Model Evaluation
+  - name: "sft_evaluation"
+    description: "Evaluate SFT model on test set"
+    script: "evaluate.py"
+    enabled: true
+    allow_failure: true
+    depends_on: ["sft_training"]
+    args:
+      agent_type: "mai_ui_agent"
+      model_name: "./models/sft_model"
+      llm_base_url: "${LLM_BASE_URL}"
+      log_root: "./eval_logs/sft"
+      max_step: 50
+
+  # Stage 5: RL Training (Optional)
+  - name: "rl_training"
+    description: "Reinforcement learning fine-tuning"
+    script: "rl_trainer.py"
+    enabled: false  # Disabled by default
+    allow_failure: true
+    depends_on: ["sft_evaluation"]
+    args:
+      config: "configs/rl_config.yaml"
+      llm_base_url: "${LLM_BASE_URL}"
+
+  # Stage 6: Final Model Evaluation
+  - name: "final_evaluation"
+    description: "Comprehensive evaluation of final model"
+    script: "evaluate.py"
+    enabled: true
+    allow_failure: true
+    depends_on: ["sft_training"]
+    args:
+      agent_type: "mai_ui_agent"
+      model_name: "./models/sft_model"
+      llm_base_url: "${LLM_BASE_URL}"
+      log_root: "./eval_logs/final"
+      max_step: 50
+      output_path: "./eval_logs/final/results.json"
+
+# Global settings
+global:
+  # Environment variables to set
+  env_vars:
+    PYTHONPATH: "."
+    TOKENIZERS_PARALLELISM: "false"
+  
+  # Retry settings
+  max_retries: 0
+  retry_delay: 60
+  
+  # Notification settings (future)
+  notifications:
+    enabled: false
+    on_failure: true
+    on_completion: true

@@ -1,0 +1,171 @@
+# verl Configuration for MAI-UI Training
+# Author: Damon Li
+# Date: 2026-01-19
+# Based on verl framework for agentic RL training
+
+# Trainer resources
+trainer:
+  nnodes: 1
+  n_gpus_per_node: 4
+
+# Rollout resources (AsyncServer mode)
+rollout:
+  nnodes: 1
+  n_gpus_per_node: 2
+
+# Data configuration
+data:
+  max_prompt_length: 2048
+  max_response_length: 512
+  train_batch_size: 32
+  gen_batch_size: 8
+  return_raw_chat: True  # Required for async rollout with tool calls
+
+# Actor, Rollout, and Reference model configuration
+actor_rollout_ref:
+  hybrid_engine: False  # Use async mode for agentic RL
+  model:
+    path: "${model.sft_model_path}"  # Will be overridden by CLI/config
+    external_lib: null
+    override_config:
+      model_config: {}
+      attn_implementation: flash_attention_2
+  
+  actor:
+    strategy: fsdp  # or megatron for larger models
+    ppo_mini_batch_size: 128
+    ppo_micro_batch_size_per_gpu: 16
+    use_dynamic_bsz: False
+    ppo_epochs: 2
+    grad_clip: 1.0
+    clip_ratio: 0.2  # Standard PPO clip ratio
+    entropy_coeff: 0.0
+    use_kl_loss: True  # Enable KL regularization for GRPO
+    kl_loss_coef: 0.001
+    loss_agg_mode: "token-mean"  # Loss aggregation mode
+  
+  ref:
+    fsdp_config:
+      param_offload: False
+      wrap_policy:
+        min_num_params: 0
+    log_prob_micro_batch_size_per_gpu: 16
+  
+  rollout:
+    name: vllm  # or "sglang"
+    mode: async  # Enable AsyncServer + AgentLoop mode
+    temperature: 1.0
+    top_p: 1.0
+    top_k: -1
+    dtype: bfloat16
+    gpu_memory_utilization: 0.5
+    prompt_length: ${data.max_prompt_length}
+    response_length: ${data.max_response_length}
+    ignore_eos: False
+    enforce_eager: True  # Disable CUDA Graph for async mode
+    free_cache_engine: True  # Free KV cache for memory management
+    load_format: auto
+    tensor_model_parallel_size: 1
+    
+    # GRPO group size: number of rollouts per prompt
+    n: 16  # GRPO group_size
+    
+    # Log-prob settings (required for GRPO)
+    calculate_log_probs: True
+    log_prob_micro_batch_size_per_gpu: 16
+    log_prob_use_dynamic_bsz: False
+    
+    # Validation/eval params
+    val_kwargs:
+      top_k: -1
+      top_p: 1.0
+      temperature: 0.0
+      n: 1
+      do_sample: False
+
+# GRPO Algorithm configuration
+algorithm:
+  name: grpo
+  norm_adv_by_std_in_grpo: True  # Normalize advantage by group std
+  # Asymmetric clipping (requires verl extension)
+  clip_eps_low: 0.2   # Lower bound for clipping
+  clip_eps_high: 0.3  # Upper bound for clipping (encourages exploration)
+
+# Async training configuration
+async_training:
+  partial_rollout: False  # Whether to allow partial rollouts
+  staleness_threshold: 0.0  # Maximum staleness allowed
+  trigger_parameter_sync_step: 1  # Sync weights every N steps
+
+# MobileWorld specific configuration
+mobile_world:
+  device: "emulator-5554"
+  step_wait_time: 1.0
+  suite_family: "mobile_world"
+  enable_mcp: false
+  max_step: 50
+  log_file_root: "./rl_logs"
+  
+  # Environment configuration
+  environment:
+    num_parallel_envs: 32
+    aw_urls: []  # Auto-discover if empty
+    env_name_prefix: "mobile_world_env"
+    env_image: "mobile_world"
+  
+  # Agent configuration
+  agent_type: "mai_ui_agent"
+  model_name: "Tongyi-MAI/MAI-UI-2B"
+  llm_base_url: "https://api.openai.com/v1"
+  api_key: "your-api-key-here"
+
+# Curriculum learning configuration
+curriculum:
+  enabled: true
+  update_frequency: 100  # Update task distribution every N rollouts
+  min_attempts_per_task: 5  # Minimum attempts before using success rate
+  
+  # Difficulty level thresholds
+  difficulty_levels:
+    frontier: [0.0, 0.25]
+    exploration: [0.25, 0.50]
+    near_mastery: [0.50, 0.75]
+    exploitation: [0.75, 1.0]
+  
+  # Initial task distribution (will adapt over time)
+  initial_distribution:
+    frontier: 0.1
+    exploration: 0.3
+    near_mastery: 0.4
+    exploitation: 0.2
+
+# Reward configuration
+reward:
+  repetition_penalty: 0.1
+  cycle_penalty_multiplier: 2.0
+  min_reward: 0.0
+
+# Fine-grained trajectory analysis
+fine_grained_analysis:
+  enabled: true
+  judge_model: "gpt-4"  # or "claude-3-opus"
+  judge_api_key: null  # Will use main API key if null
+  extract_correct_prefix: true  # Extract correct prefix from failed trajectories
+
+# Iterative rejection sampling
+rejection_sampling:
+  enabled: false  # Enable for iterative data pipeline
+  num_iterations: 5
+  min_correctness_ratio: 0.5  # Minimum ratio of correct steps to keep trajectory
+
+# Experience replay buffer
+replay_buffer:
+  enabled: true
+  max_trajectories_per_task: 8
+  use_when_no_success: true  # Use replay buffer when rollout group has no success
+
+# Output configuration
+output:
+  output_dir: "./verl_output"
+  save_frequency: 500  # Save checkpoint every N steps
+  log_dir: "./verl_logs"

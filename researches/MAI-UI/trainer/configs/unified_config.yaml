@@ -1,0 +1,141 @@
+# Unified Configuration for MAI-UI Training
+# This config consolidates all settings for the training pipeline
+
+# Project metadata
+project:
+  name: "MAI-UI-Training"
+  version: "1.0.0"
+  description: "End-to-end training pipeline for MAI-UI models"
+
+# Data preprocessing settings
+data:
+  # Raw data
+  raw_data_dir: "../../dataset/20260119_201327"
+  
+  # Processed data output
+  processed_data_dir: "../../dataset/processed"
+  processed_data_file: "../../dataset/processed/sft_train.jsonl"
+  
+  # Processing options
+  output_format: "prompt_response"  # openai_messages, prompt_response, full_trajectory
+  image_format: "base64"  # base64, path, skip
+  compress_images: true
+  image_quality: 85
+  image_max_size: null  # e.g., [1920, 1080] for resizing
+  
+  # Filtering
+  max_samples_per_trajectory: -1  # -1 for all
+  include_history: true
+  history_window: 5
+  skip_failed_steps: true
+
+# Model settings
+model:
+  # Base model
+  name: "MAI-UI-2B"
+  path: "Tongyi-MAI/MAI-UI-2B"
+  
+  # SFT model output
+  sft_output_dir: "./models/sft_model"
+  
+  # RL model output (if enabled)
+  rl_output_dir: "./models/rl_model"
+
+# Training settings
+training:
+  # SFT training
+  sft:
+    max_length: 2048
+    num_train_epochs: 3
+    per_device_train_batch_size: 2
+    gradient_accumulation_steps: 8
+    learning_rate: 2.0e-5
+    warmup_steps: 100
+    logging_steps: 10
+    save_steps: 100
+    save_total_limit: 2
+    bf16: true
+    
+  # RL training (optional)
+  rl:
+    enabled: false
+    num_epochs: 10
+    ppo_steps: 100
+    batch_size: 32
+    learning_rate: 1.0e-5
+    gamma: 0.99
+    lam: 0.95
+    cliprange: 0.2
+    vf_coef: 0.5
+    num_parallel_envs: 4
+    max_step: 50
+    replay_buffer_size: 8
+
+# Evaluation settings
+evaluation:
+  agent_type: "mai_ui_agent"
+  max_step: 50
+  enable_mcp: false
+  
+  # Test tasks (empty = all tasks)
+  tasks: []
+  
+  # Batch evaluation
+  batch_eval:
+    enabled: true
+    results_dir: "./batch_eval_results"
+    generate_reports: true
+    report_formats: ["markdown", "json", "html"]
+
+# Environment settings (for RL training and evaluation)
+environment:
+  suite_family: "mobile_world"
+  device: "emulator-5554"
+  step_wait_time: 1.0
+  env_name_prefix: "mobile_world_env"
+  env_image: "mobile_world"
+
+# Pipeline settings
+pipeline:
+  checkpoint_dir: "./pipeline_checkpoints"
+  log_dir: "./pipeline_logs"
+  
+  # Stages to run
+  stages:
+    data_preprocessing: true
+    data_validation: true
+    sft_training: true
+    sft_evaluation: true
+    rl_training: false
+    final_evaluation: true
+  
+  # Error handling
+  stop_on_error: true
+  retry_failed_stages: false
+  max_retries: 0
+
+# Logging and monitoring
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  
+  # TensorBoard
+  tensorboard:
+    enabled: false
+    log_dir: "./tensorboard_logs"
+  
+  # Weights & Biases
+  wandb:
+    enabled: false
+    project: "mai-ui-training"
+    entity: null
+
+# Resource management
+resources:
+  # GPU settings
+  gpu_ids: [0]
+  mixed_precision: true
+  
+  # Memory
+  dataloader_num_workers: 4
+  prefetch_factor: 2

@@ -1,20 +1,25 @@
-# MAI-UI Training Requirements
-
-# Core dependencies
+# Core dependencies for MAI-UI Training
 torch>=2.0.0
 transformers>=4.35.0
 datasets>=2.14.0
 accelerate>=0.24.0
 
-# RL training
+# Training frameworks
 trl>=0.7.0
-
-# Android environment (optional, for RL training)
-# android_env
 
 # Data processing
 pillow>=10.0.0
 pyyaml>=6.0
+tqdm>=4.66.0
 
 # Utilities
-tqdm>=4.66.0
+numpy>=1.24.0
+pandas>=2.0.0
+
+# Optional: For RL training
+# verl  # Uncomment if using verl for RL
+
+# Development
+pytest>=7.0.0
+black>=23.0.0
+ruff>=0.1.0
