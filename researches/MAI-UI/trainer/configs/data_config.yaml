@@ -1,0 +1,58 @@
+# Data Building Configuration for MAI-UI
+# Author: Damon Li
+# Date: 2026-01-19
+
+data_sources:
+  # Path to log root directory containing traj.json files
+  log_root: "/path/to/log/root"
+  
+  # Sources to include
+  sources:
+    - "rejection_sampling"  # From rejection-sampled trajectories
+    - "manual_annotation"    # From manually annotated trajectories
+    - "automatic_rollout"    # From automatic agent rollouts
+
+filtering:
+  # Only include successful trajectories (score > threshold)
+  min_score: 0.99
+  
+  # Filter by task tags (empty list = include all)
+  include_tags: []
+  exclude_tags: []
+  
+  # Maximum steps per trajectory
+  max_steps: 50
+  
+  # Minimum steps per trajectory
+  min_steps: 1
+
+sampling:
+  # Random seed for reproducibility
+  seed: 42
+  
+  # Maximum number of trajectories per task
+  max_trajectories_per_task: 100
+  
+  # Whether to shuffle trajectories before sampling
+  shuffle: true
+
+image_processing:
+  # How to handle screenshots
+  # Options: "path" (store file paths), "base64" (encode as base64), "skip" (exclude images)
+  image_format: "path"
+  
+  # Resize images to this resolution (width, height), None to keep original
+  resize: null
+  
+  # Whether to include images in the dataset
+  include_images: true
+
+output:
+  # Output file path (JSONL format)
+  output_path: "./data/processed/sft_data.jsonl"
+  
+  # Number of samples per output file (for sharding)
+  samples_per_file: 10000
+  
+  # Whether to compress output files
+  compress: false
