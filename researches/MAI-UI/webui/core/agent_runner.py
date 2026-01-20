@@ -20,6 +20,7 @@ from .adb_utils import (
     long_press_device,
     swipe_direction,
     input_text_yadb,
+    paste_text_yadb,
     press_system_button,
     open_app,
     device_cache,
@@ -476,6 +477,64 @@ class AgentRunner:
             print(f"[AgentRunner] LLM prediction failed: {e}")
             return {"action": "wait"}, f"Prediction error: {e}"
     
+    def _get_recent_input_field_coordinate(self, img_width: int, img_height: int, lookback: int = 5) -> Optional[List[int]]:
+        """
+        Get input field coordinate from recent trajectory (usually from recent click action).
+        
+        Args:
+            img_width: Screenshot width
+            img_height: Screenshot height
+            lookback: Number of steps to look back, default 5
+        
+        Returns:
+            Input field coordinate [x, y] or None
+        """
+        if not self.trajectory:
+            return None
+        
+        recent_steps = self.trajectory[-lookback:] if len(self.trajectory) > lookback else self.trajectory
+        
+        # Search backwards for recent click action (usually clicking input field)
+        for step in reversed(recent_steps):
+            if step.action_type == "click":
+                coords = step.action.get("coordinate", [])
+                if len(coords) >= 2:
+                    x = int(coords[0] * img_width)
+                    y = int(coords[1] * img_height)
+                    return [x, y]
+        
+        return None
+    
+    def _count_recent_type_failures(self, text: str, lookback: int = 5) -> int:
+        """
+        Count recent type action failures (same text) in last lookback steps.
+        Even if success=True, repeated execution of the same action is considered a failure.
+        
+        Args:
+            text: Text to check
+            lookback: Number of steps to look back, default 5
+        
+        Returns:
+            Number of failures (including repeated executions)
+        """
+        if not self.trajectory:
+            return 0
+        
+        count = 0
+        recent_steps = self.trajectory[-lookback:] if len(self.trajectory) > lookback else self.trajectory
+        
+        for step in recent_steps:
+            if step.action_type == "type":
+                step_text = step.action.get("text", "")
+                if step_text == text:
+                    count += 1
+                    # If explicitly failed, count extra
+                    if not step.success:
+                        count += 1
+        
+        # If repeated 2+ times, consider it a failure
+        return max(0, count - 1)  # Subtract current attempt
+    
     def _execute_action(self, action: Dict[str, Any], screenshot: Image.Image) -> tuple:
         """
         Execute action.
@@ -517,8 +576,37 @@ class AgentRunner:
             
             elif action_type == "type":
                 text = action.get("text", "")
-                success = input_text_yadb(text, self.device_id)
-                return success, f"Type: {text[:20]}..."
+                # Check if there are recent type action failures
+                recent_type_failures = self._count_recent_type_failures(text)
+                if recent_type_failures >= 2:
+                    # Auto-switch to paste if type failed 2+ times
+                    print(f"[AgentRunner] Type action failed {recent_type_failures} times, auto-switching to paste")
+                    coords = action.get("coordinate")
+                    coordinate = None
+                    if coords:
+                        x = int(coords[0] * img_width)
+                        y = int(coords[1] * img_height)
+                        coordinate = [x, y]
+                    else:
+                        # If no coordinate provided, try to get from recent click action
+                        coordinate = self._get_recent_input_field_coordinate(img_width, img_height)
+                    success = paste_text_yadb(text, coordinate, self.device_id, clear_first=True)
+                    return success, f"Auto-switched to paste: {text[:20]}..."
+                else:
+                    success = input_text_yadb(text, self.device_id)
+                    return success, f"Type: {text[:20]}..."
+            
+            elif action_type == "paste":
+                text = action.get("text", "")
+                coords = action.get("coordinate")
+                coordinate = None
+                if coords:
+                    # Convert relative coordinates to absolute
+                    x = int(coords[0] * img_width)
+                    y = int(coords[1] * img_height)
+                    coordinate = [x, y]
+                success = paste_text_yadb(text, coordinate, self.device_id)
+                return success, f"Paste: {text[:20]}..."
             
             elif action_type == "system_button":
                 button = action.get("button", "home")

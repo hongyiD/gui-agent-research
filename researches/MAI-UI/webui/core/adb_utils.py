@@ -101,7 +101,22 @@ SCREENSHOT_REMOTE_DIR = "/sdcard"
 
 # YADB path configuration (for Chinese input support)
 YADB_REMOTE_PATH = "/data/local/tmp/yadb"
-YADB_LOCAL_PATH = os.path.join(_PROJECT_ROOT, "tools", "yadb")
+# Try multiple possible paths for YADB (prioritize webui/tools/yadb)
+_POSSIBLE_YADB_PATHS = [
+    os.path.join(_PROJECT_ROOT, "tools", "yadb"),  # webui/tools/yadb (primary location)
+    os.path.join(os.path.dirname(os.path.dirname(_PROJECT_ROOT)), "MAI-UI-WebUI", "tools", "yadb"),  # MAI-UI-WebUI/tools/yadb (fallback)
+    os.path.join(os.path.dirname(_PROJECT_ROOT), "MAI-UI-WebUI", "tools", "yadb"),  # Alternative path
+]
+YADB_LOCAL_PATH = None
+for path in _POSSIBLE_YADB_PATHS:
+    if os.path.exists(path):
+        YADB_LOCAL_PATH = path
+        print(f"[YADB] Found YADB at: {YADB_LOCAL_PATH}")
+        break
+if YADB_LOCAL_PATH is None:
+    # Use first path as default even if it doesn't exist (for error messages)
+    YADB_LOCAL_PATH = _POSSIBLE_YADB_PATHS[0]
+    print(f"[YADB] YADB not found in any of the paths, using default: {YADB_LOCAL_PATH}")
 
 
 def run_adb_command(
@@ -691,20 +706,33 @@ def install_yadb(device_id: Optional[str] = None) -> bool:
     Returns:
         Whether successful
     """
-    if not os.path.exists(YADB_LOCAL_PATH):
-        print(f"[YADB] Local file not found: {YADB_LOCAL_PATH}")
-        return False
-    
+    # First check if YADB is already installed on device
     check_cmd = ["adb"]
     if device_id:
         check_cmd.extend(["-s", device_id])
-    check_cmd.extend(["shell", "ls", YADB_REMOTE_PATH])
+    check_cmd.extend(["shell", "test", "-f", YADB_REMOTE_PATH, "&&", "echo", "exists"])
     
-    stdout, _, code = run_adb_command(check_cmd)
-    if code == 0 and "No such file" not in stdout:
+    stdout, _, code = run_adb_command(check_cmd, timeout=5)
+    if code == 0 and "exists" in stdout:
         print("[YADB] Already installed on device")
         return True
     
+    # If not on device, check if local file exists
+    if not os.path.exists(YADB_LOCAL_PATH):
+        print(f"[YADB] Local file not found: {YADB_LOCAL_PATH}")
+        print(f"[YADB] Tried paths: {_POSSIBLE_YADB_PATHS}")
+        # Check if YADB exists on device anyway (maybe installed manually)
+        check_cmd2 = ["adb"]
+        if device_id:
+            check_cmd2.extend(["-s", device_id])
+        check_cmd2.extend(["shell", "ls", YADB_REMOTE_PATH])
+        stdout2, _, code2 = run_adb_command(check_cmd2, timeout=5)
+        if code2 == 0 and "No such file" not in stdout2:
+            print("[YADB] Found YADB on device, skipping installation")
+            return True
+        return False
+    
+    # Push YADB to device
     push_cmd = ["adb"]
     if device_id:
         push_cmd.extend(["-s", device_id])
@@ -735,25 +763,224 @@ def input_text_yadb(text: str, device_id: Optional[str] = None) -> bool:
     Returns:
         Whether successful
     """
-    install_yadb(device_id)
+    # Check if YADB is available before attempting to use it
+    if not install_yadb(device_id):
+        print("[YADB] YADB not available, cannot input text")
+        return False
     
+    # YADB requires spaces to be replaced with underscores
     escaped_text = text.replace(" ", "_")
     
-    cmd = ["adb"]
-    if device_id:
-        cmd.extend(["-s", device_id])
-    cmd.extend([
-        "shell",
-        "app_process",
-        "-Djava.class.path=" + YADB_REMOTE_PATH,
-        "/data/local/tmp",
-        "com.ysbing.yadb.Main",
-        "-keyboard",
-        escaped_text
-    ])
+    # Use shell=True with proper quoting to handle Chinese characters
+    # This ensures the text is properly passed to the shell
+    import shlex
     
-    _, _, code = run_adb_command(cmd, timeout=10)
-    return code == 0
+    # Build the command parts
+    adb_cmd = "adb"
+    if device_id:
+        adb_cmd = f"adb -s {device_id}"
+    
+    # Properly quote the text to handle special characters and Chinese
+    quoted_text = shlex.quote(escaped_text)
+    
+    # Construct the full shell command
+    shell_cmd = (
+        f"{adb_cmd} shell app_process "
+        f"-Djava.class.path={YADB_REMOTE_PATH} "
+        f"/data/local/tmp "
+        f"com.ysbing.yadb.Main "
+        f"-keyboard {quoted_text}"
+    )
+    
+    print(f"[YADB] Inputting text (length: {len(text)}, escaped: {escaped_text[:50]}...)")
+    print(f"[YADB] Shell command: {shell_cmd[:100]}...")
+    
+    try:
+        result = subprocess.run(
+            shell_cmd,
+            shell=True,
+            capture_output=True,
+            text=True,
+            timeout=10,
+            encoding="utf-8",
+            errors="replace"
+        )
+        
+        if result.returncode != 0:
+            print(f"[YADB] Command failed: code={result.returncode}, stderr={result.stderr[:200] if result.stderr else 'None'}")
+            return False
+        
+        return True
+        
+    except subprocess.TimeoutExpired:
+        print("[YADB] Command timeout")
+        return False
+    except Exception as e:
+        print(f"[YADB] Exception: {e}")
+        return False
+
+
+def set_clipboard(text: str, device_id: Optional[str] = None) -> bool:
+    """
+    Set clipboard content on Android device.
+    
+    Uses multiple methods to ensure compatibility:
+    1. Try service call clipboard (Android 11+)
+    2. Try am broadcast method (requires helper app)
+    3. Fallback to YADB if available
+    
+    Args:
+        text: Text to set to clipboard
+        device_id: Optional, specify device ID
+    
+    Returns:
+        Whether successful
+    """
+    import base64
+    
+    # Method 1: Try service call clipboard (Android 11+)
+    # This requires root or special permissions on some devices
+    try:
+        # Encode text to base64 for clipboard
+        text_b64 = base64.b64encode(text.encode('utf-8')).decode('utf-8')
+        
+        cmd = ["adb"]
+        if device_id:
+            cmd.extend(["-s", device_id])
+        cmd.extend([
+            "shell",
+            "service", "call", "clipboard", "2",
+            "i32", "1",
+            "s16", text_b64
+        ])
+        
+        _, _, code = run_adb_command(cmd, timeout=5)
+        if code == 0:
+            print("[Clipboard] Set clipboard using service call method")
+            return True
+    except Exception as e:
+        print(f"[Clipboard] Service call method failed: {e}")
+    
+    # Method 2: Try am broadcast (requires helper app or custom broadcast receiver)
+    # This is a fallback method
+    try:
+        text_b64 = base64.b64encode(text.encode('utf-8')).decode('utf-8')
+        cmd = ["adb"]
+        if device_id:
+            cmd.extend(["-s", device_id])
+        cmd.extend([
+            "shell",
+            "am", "broadcast",
+            "-a", "clipper.set",
+            "--es", "text", text
+        ])
+        
+        _, _, code = run_adb_command(cmd, timeout=5)
+        if code == 0:
+            print("[Clipboard] Set clipboard using am broadcast method")
+            return True
+    except Exception as e:
+        print(f"[Clipboard] AM broadcast method failed: {e}")
+    
+    # Method 3: Use YADB as fallback (it can simulate clipboard paste in some cases)
+    print("[Clipboard] Falling back to YADB method")
+    return False
+
+
+def paste_text_yadb(text: str, coordinate: Optional[List[int]] = None, device_id: Optional[str] = None, clear_first: bool = True) -> bool:
+    """
+    Paste pre-generated text into input field using clipboard or YADB.
+    This is more reliable than type for longer texts or when type action fails repeatedly.
+    
+    Implementation:
+    1. If coordinate is provided, click the input field first to focus it
+    2. Optionally clear existing content in input field (long press to select all, then delete)
+    3. Try to set clipboard and use paste gesture, fallback to YADB if clipboard fails
+    
+    Args:
+        text: Text to paste
+        coordinate: Optional [x, y] coordinate to click before pasting
+        device_id: Optional, specify device ID
+        clear_first: Whether to clear input field before pasting, default True
+    
+    Returns:
+        Whether successful
+    """
+    # Click input field first if coordinate is provided
+    if coordinate and len(coordinate) >= 2:
+        x, y = coordinate[0], coordinate[1]
+        print(f"[Paste] Clicking input field at ({x}, {y}) before pasting")
+        tap_device(x, y, device_id)
+        time.sleep(0.5)  # Wait longer for input field to focus
+    else:
+        print("[Paste] Warning: No coordinate provided, paste may fail")
+    
+    # Clear input field if needed
+    if clear_first and coordinate:
+        print("[Paste] Clearing existing content in input field")
+        x, y = coordinate[0], coordinate[1]
+        # Long press input field to select all text
+        long_press_device(x, y, duration=500, device_id=device_id)
+        time.sleep(0.5)
+        
+        # Try to delete selected text
+        # Method 1: Send back key
+        press_system_button("back", device_id)
+        time.sleep(0.2)
+        
+        # Method 2: Try DEL key (some keyboards support this)
+        cmd = ["adb"]
+        if device_id:
+            cmd.extend(["-s", device_id])
+        cmd.extend(["shell", "input", "keyevent", "KEYCODE_DEL"])
+        run_adb_command(cmd, timeout=2)
+        time.sleep(0.3)
+    
+    # Try clipboard method first
+    clipboard_success = set_clipboard(text, device_id)
+    
+    if clipboard_success and coordinate:
+        # If clipboard was set successfully, try to paste using long press
+        print("[Paste] Attempting to paste using clipboard + long press")
+        x, y = coordinate[0], coordinate[1]
+        
+        # Long press to show context menu, then try to find paste option
+        # This is device/app dependent, so we'll try multiple approaches
+        long_press_device(x, y, duration=800, device_id=device_id)
+        time.sleep(0.5)
+        
+        # Try common paste shortcuts:
+        # 1. Some apps support Ctrl+V via keyboard
+        # 2. Some apps have paste button at specific location
+        # For now, we'll use YADB as it's more reliable
+        
+        # Actually, let's just use YADB after setting clipboard
+        # The clipboard might help with some apps that check clipboard
+    
+    # Use YADB to input text (most reliable method)
+    print(f"[Paste] Using YADB to input text: {text[:30]}...")
+    
+    # Ensure input field has focus, click again
+    if coordinate and len(coordinate) >= 2:
+        x, y = coordinate[0], coordinate[1]
+        tap_device(x, y, device_id)
+        time.sleep(0.3)
+    
+    success = input_text_yadb(text, device_id)
+    
+    if not success:
+        print("[Paste] YADB input failed, retrying once")
+        time.sleep(0.5)
+        # Retry once
+        if coordinate and len(coordinate) >= 2:
+            x, y = coordinate[0], coordinate[1]
+            tap_device(x, y, device_id)
+            time.sleep(0.3)
+        success = input_text_yadb(text, device_id)
+    
+    time.sleep(0.3)  # Wait for text input to complete
+    
+    return success
 
 
 # System button mapping

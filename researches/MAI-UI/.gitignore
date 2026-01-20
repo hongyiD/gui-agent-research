@@ -3,5 +3,7 @@ dataset/
 MAI-UI-WebUI/
 .docs/
 
+**/logs/
+
 .DS_Store
 **/.DS_Store
