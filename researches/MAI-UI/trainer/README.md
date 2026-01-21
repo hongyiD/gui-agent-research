@@ -486,6 +486,7 @@ evaluation:
 
 遇到问题？请先查阅 [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)，包含以下常见问题的解决方案：
 
+- 🔧 **NumPy 版本兼容性问题**：如果遇到 `AttributeError: _ARRAY_API not found` 或 NumPy 2.x 相关错误，请参考 [NUMPY_FIX.md](NUMPY_FIX.md)
 - 🔧 数据处理失败（图片路径错误、格式不合法）
 - 🔧 训练 OOM（显存不足）
 - 🔧 RL 训练环境失败
