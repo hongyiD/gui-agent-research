@@ -1,4 +1,5 @@
 upstream/
+vllm/
 dataset/
 MAI-UI-WebUI/
 .docs/
