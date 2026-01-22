@@ -19,9 +19,48 @@ from io import BytesIO
 from pathlib import Path
 from typing import Any
 
+import sys
 import yaml
 from PIL import Image
 from tqdm import tqdm
+
+# Try to import official MAI-UI prompt from multiple sources (priority order)
+USE_OFFICIAL_PROMPT = False
+MAI_MOBILE_SYS_PROMPT_ASK_USER_MCP = None
+
+# Priority 1: Import from trainer/prompts/maiui_official_prompts.py (local copy)
+prompts_file = Path(__file__).parent.parent / "prompts" / "maiui_official_prompts.py"
+if prompts_file.exists():
+    try:
+        # Add prompts directory to path
+        prompts_dir = prompts_file.parent
+        if str(prompts_dir) not in sys.path:
+            sys.path.insert(0, str(prompts_dir))
+        from maiui_official_prompts import MAI_MOBILE_SYS_PROMPT_ASK_USER_MCP
+        USE_OFFICIAL_PROMPT = True
+    except ImportError as e:
+        # Silently continue to next import source
+        pass
+
+# Priority 2: Import from MAI-UI-WebUI (official source)
+if not USE_OFFICIAL_PROMPT:
+    webui_path = Path(__file__).parent.parent.parent.parent / "MAI-UI-WebUI" / "src"
+    if webui_path.exists():
+        sys.path.insert(0, str(webui_path))
+        try:
+            from prompt import MAI_MOBILE_SYS_PROMPT_ASK_USER_MCP
+            USE_OFFICIAL_PROMPT = True
+        except ImportError:
+            pass
+
+# Priority 3: Import from mobile_world (fallback)
+if not USE_OFFICIAL_PROMPT:
+    try:
+        sys.path.insert(0, str(Path(__file__).parent.parent))
+        from mobile_world.agents.utils.prompts import MAI_MOBILE_SYS_PROMPT_ASK_USER_MCP
+        USE_OFFICIAL_PROMPT = True
+    except ImportError:
+        pass
 
 from data_formats import (
     OutputFormat,
@@ -36,28 +75,53 @@ from data_formats import (
     FullTrajectorySample,
 )
 
-
-GUI_AGENT_SYSTEM_PROMPT = """You are a GUI agent. You are given a task and your action history, with screenshots. You need to perform the next action to complete the task.
+# Use official MAI-UI prompt if available, otherwise fallback to simplified version
+if USE_OFFICIAL_PROMPT:
+    # Official prompt is a Jinja2 Template, render it without tools for data processing
+    GUI_AGENT_SYSTEM_PROMPT = MAI_MOBILE_SYS_PROMPT_ASK_USER_MCP.render(tools="")
+else:
+    # Fallback: simplified prompt (should not be used in production)
+    # WARNING: This fallback prompt may not match the official MAI-UI format.
+    # Please ensure MAI-UI-WebUI/src/prompt.py is accessible or mobile_world is installed.
+    GUI_AGENT_SYSTEM_PROMPT = """You are a GUI agent. You are given a task and your action history, with screenshots. You need to perform the next action to complete the task.
 
 ## Output Format
-For each action, return your thinking process and the action in the following format:
-
-Thought: [Your analysis of the current situation and what you need to do]
-Action: {"action_type": "...", ...}
+For each function call, return the thinking process in <thinking> </thinking> tags, and a json object with function name and arguments within <tool_call></tool_call> XML tags:
+```
+<thinking>
+...
+</thinking>
+<tool_call>
+{"name": "mobile_use", "arguments": <args-json-object>}
+</tool_call>
+```
 
 ## Action Space
 
-| Action Type | Description | JSON Format Example |
-|-------------|-------------|---------------------|
-| `click` | Tap visible element | `{"action_type": "click", "coordinate": [x, y]}` |
-| `double_tap` | Double-tap visible element | `{"action_type": "double_tap", "coordinate": [x, y]}` |
-| `long_press` | Long-press visible element | `{"action_type": "long_press", "coordinate": [x, y]}` |
-| `type` | Type text into field | `{"action_type": "type", "text": "your text"}` |
-| `swipe` | Swipe in direction | `{"action_type": "swipe", "direction": "up/down/left/right", "coordinate": [x, y]}` |
-| `drag` | Drag from point to point | `{"action_type": "drag", "start_coordinate": [x1, y1], "end_coordinate": [x2, y2]}` |
-| `system_button` | Press system button | `{"action_type": "system_button", "button": "home/back"}` |
-| `answer` | Answer user question | `{"action_type": "answer", "text": "answer text"}` |
-| `wait` | Wait for screen update | `{"action_type": "wait"}` |
+{"action": "click", "coordinate": [x, y]}
+{"action": "long_press", "coordinate": [x, y]}
+{"action": "type", "text": ""}
+{"action": "swipe", "direction": "up or down or left or right", "coordinate": [x, y]}
+{"action": "open", "text": "app_name"}
+{"action": "drag", "start_coordinate": [x1, y1], "end_coordinate": [x2, y2]}
+{"action": "system_button", "button": "button_name"}
+{"action": "wait"}
+{"action": "terminate", "status": "success or fail"}
+{"action": "answer", "text": "xxx"}
+{"action": "ask_user", "text": "xxx"}
+{"action": "double_click", "coordinate": [x, y]}
+
+## Behavior Rules
+1. Track your previous action. If it was a swipe, do NOT swipe in the same direction more than 5 times consecutively.
+2. If you swipe in the same direction 2-3 times but the screen content doesn't change significantly (likely reached the boundary), try swiping in the **opposite direction**.
+3. Different apps may require different swipe directions to view history or more content. Adjust flexibly based on actual screen feedback.
+4. Strictly follow the user's instructions. If you have had a conversation with the user, prioritize the **latest instruction**.
+
+## Note
+- Write a small plan and finally summarize your next action (with its target element) in one sentence in <thinking></thinking> part.
+- **IMPORTANT: When the user asks to open an app (by name like "微信", "高德地图", "淘宝", etc.), ALWAYS use the `open` action with the app name first!** This is the fastest way to launch apps.
+- Example: If user says "打开微信", use `{"action": "open", "text": "微信"}` instead of navigating manually.
+- You must follow the Action Space strictly, and return the correct json object within <thinking> </thinking> and <tool_call></tool_call> XML tags.
 """
 
 
@@ -185,7 +249,7 @@ class UnifiedDataProcessor:
             elif self.config.image_format == ImageFormat.PATH:
                 content.append({
                     "type": "text",
-                    "text": f"[Screenshot: {screenshot_path}]"
+                    "text": f"<image_path>{screenshot_path}</image_path>"
                 })
         
         instruction_text = f"Task: {instruction}\n"
@@ -287,6 +351,7 @@ class UnifiedDataProcessor:
                 "action_type": step.get("action_type"),
                 "success": step.get("success", True),
                 "timestamp": step.get("timestamp"),
+                "screenshot_path": full_screenshot_path if full_screenshot_path else screenshot_path,  # Preserve screenshot path
             }
             
             sample = OpenAIFormatSample(messages=messages, metadata=metadata)
@@ -331,7 +396,27 @@ class UnifiedDataProcessor:
                 if content_item["type"] == "text":
                     user_text_parts.append(content_item["text"])
                 elif content_item["type"] == "image_url":
-                    user_text_parts.append("[Image]")
+                    # Preserve image information based on image_format setting
+                    image_url = content_item.get("image_url", {}).get("url", "")
+                    if image_url.startswith("data:image"):
+                        # Extract base64 data from data URL
+                        if "," in image_url:
+                            base64_data = image_url.split(",", 1)[1]
+                            if self.config.image_format == ImageFormat.BASE64:
+                                user_text_parts.append(f"<image_base64>{base64_data}</image_base64>")
+                            elif self.config.image_format == ImageFormat.PATH:
+                                # Try to get path from metadata
+                                screenshot_path = openai_sample.metadata.get("screenshot_path", "")
+                                if screenshot_path:
+                                    user_text_parts.append(f"<image_path>{screenshot_path}</image_path>")
+                                else:
+                                    user_text_parts.append("[Image]")
+                            else:  # SKIP
+                                user_text_parts.append("[Image]")
+                        else:
+                            user_text_parts.append("[Image]")
+                    else:
+                        user_text_parts.append(f"<image_path>{image_url}</image_path>")
             user_text = "\n".join(user_text_parts)
             
             assistant_text = assistant_msg.content[0]["text"] if assistant_msg.content else ""
@@ -550,6 +635,17 @@ def print_stats_report(stats: ProcessingStats) -> None:
 
 
 def main() -> None:
+    # Print prompt source information
+    if USE_OFFICIAL_PROMPT:
+        print("✓ Using official MAI-UI prompt from MAI_MOBILE_SYS_PROMPT_ASK_USER_MCP")
+    else:
+        print("⚠ WARNING: Using fallback prompt. Official prompt not found.")
+        print("  Please ensure one of the following is available:")
+        print("    1. trainer/prompts/maiui_official_prompts.py (recommended)")
+        print("    2. MAI-UI-WebUI/src/prompt.py")
+        print("    3. mobile_world/agents/utils/prompts.py")
+        print("  Fallback prompt may not match the official MAI-UI format.\n")
+    
     parser = argparse.ArgumentParser(
         description="Unified data processor for MAI-UI training"
     )

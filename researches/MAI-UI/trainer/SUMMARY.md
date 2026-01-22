@@ -9,18 +9,19 @@
 
 ## 核心改进
 
-### 1. 数据构建模块 (`data/build_data.py`)
+### 1. 数据构建模块 (`data/unified_data_processor.py`)
 
-实现了三种数据源的融合：
+统一数据处理器，支持多种数据源和输出格式：
 
-- **拒绝采样轨迹 (Rejection Sampling)**: 从多个候选轨迹中选择最优轨迹
-- **人工标注轨迹 (Manual Annotation)**: 高质量的人工标注数据
-- **自动 Agent 执行 (Automatic Rollout)**: 自动生成的交互轨迹
+- **多种输入格式**: 支持从 `traj.json` 日志或 `trajectory.jsonl` 文件构建训练数据
+- **多种输出格式**: OpenAI Messages、Prompt-Response、Full Trajectory
+- **数据验证**: 自动验证数据格式、路径合法性、参数完整性
 
 关键特性：
 - 支持多种数据源的自动合并
 - 实现了轨迹质量评估和过滤
 - 支持数据增强和格式化
+- 统一的接口，替代了原有的 `build_data.py` 和 `process_trajectory_jsonl.py`
 
 ### 2. 在线强化学习模块 (`rl_trainer.py`)
 
@@ -88,7 +89,9 @@ trainer/
 │   ├── sft_config.yaml      # SFT 训练配置
 │   └── rl_config.yaml       # RL 训练配置
 ├── data/
-│   └── build_data.py        # 数据构建脚本
+│   ├── unified_data_processor.py  # 统一数据处理器
+│   ├── data_formats.py           # 标准数据格式定义
+│   └── format_validators.py      # 数据格式验证器
 ├── sft_trainer.py           # SFT 训练脚本
 ├── rl_trainer.py            # RL 训练脚本
 └── evaluate.py              # 模型评估脚本
@@ -100,7 +103,9 @@ trainer/
 
 ```bash
 # 1. 数据构建
-python data/build_data.py --config configs/data_config.yaml
+python data/unified_data_processor.py \
+    --config configs/data_config.yaml \
+    --output_format prompt_response
 
 # 2. SFT 训练
 python sft_trainer.py --config configs/sft_config.yaml

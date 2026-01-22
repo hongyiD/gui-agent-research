@@ -8,7 +8,7 @@ model:
 
 data:
   path: "/home/ubuntu/gui-agent-research/researches/MAI-UI/trainer/data/processed/sft_data.jsonl"
-  # The build_data.py script will generate data from these sources
+  # The unified_data_processor.py script will generate data from these sources
   sources:
     - "rejection_sampling"
     - "manual_annotation"

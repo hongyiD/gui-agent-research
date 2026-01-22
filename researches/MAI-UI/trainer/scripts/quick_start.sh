@@ -43,6 +43,7 @@ MODE="full"
 CONFIG_FILE="pipeline/pipeline_config.yaml"
 LLM_BASE_URL=""
 SKIP_DEPS=false
+RESUME=false
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -63,6 +64,10 @@ while [[ $# -gt 0 ]]; do
             SKIP_DEPS=true
             shift
             ;;
+        --resume)
+            RESUME=true
+            shift
+            ;;
         --help)
             echo "Usage: $0 [OPTIONS]"
             echo ""
@@ -71,6 +76,7 @@ while [[ $# -gt 0 ]]; do
             echo "  --config <file>         Path to pipeline config (default: pipeline/pipeline_config.yaml)"
             echo "  --llm-base-url <url>    LLM API base URL (required for eval)"
             echo "  --skip-deps             Skip dependency installation"
+            echo "  --resume                Resume from last failed stage"
             echo "  --help                  Show this help message"
             echo ""
             echo "Modes:"
@@ -121,34 +127,39 @@ if [[ "$MODE" == "full" || "$MODE" == "eval" ]]; then
     export LLM_BASE_URL="$LLM_BASE_URL"
 fi
 
-# Run based on mode
-case $MODE in
-    full)
-        log_info "Running FULL pipeline..."
-        python3 pipeline/orchestrator.py --config "$CONFIG_FILE"
-        ;;
-    
-    data)
-        log_info "Running DATA preprocessing only..."
-        python3 pipeline/orchestrator.py --config "$CONFIG_FILE" --stop-at data_preprocessing
-        ;;
-    
-    sft)
-        log_info "Running DATA + SFT training..."
-        python3 pipeline/orchestrator.py --config "$CONFIG_FILE" --stop-at sft_training
-        ;;
-    
-    eval)
-        log_info "Running EVALUATION only..."
-        python3 pipeline/orchestrator.py --config "$CONFIG_FILE" --start-from sft_evaluation
-        ;;
-    
-    *)
-        log_error "Unknown mode: $MODE"
-        echo "Valid modes: full, data, sft, eval"
-        exit 1
-        ;;
-esac
+# Run based on mode or resume
+if [ "$RESUME" = true ]; then
+    log_info "Resuming pipeline from last failed stage..."
+    python3 pipeline/orchestrator.py --config "$CONFIG_FILE" --resume
+else
+    case $MODE in
+        full)
+            log_info "Running FULL pipeline..."
+            python3 pipeline/orchestrator.py --config "$CONFIG_FILE"
+            ;;
+        
+        data)
+            log_info "Running DATA preprocessing only..."
+            python3 pipeline/orchestrator.py --config "$CONFIG_FILE" --stop-at data_preprocessing
+            ;;
+        
+        sft)
+            log_info "Running DATA + SFT training..."
+            python3 pipeline/orchestrator.py --config "$CONFIG_FILE" --stop-at sft_training
+            ;;
+        
+        eval)
+            log_info "Running EVALUATION only..."
+            python3 pipeline/orchestrator.py --config "$CONFIG_FILE" --start-from sft_evaluation
+            ;;
+        
+        *)
+            log_error "Unknown mode: $MODE"
+            echo "Valid modes: full, data, sft, eval"
+            exit 1
+            ;;
+    esac
+fi
 
 # Check exit status
 if [ $? -eq 0 ]; then
@@ -179,7 +190,7 @@ else
     echo ""
     echo "Troubleshooting:"
     echo "  1. Check logs in pipeline_logs/"
-    echo "  2. Resume from failure: python scripts/resume_training.py"
+    echo "  2. Resume from failure: python pipeline/orchestrator.py --config $CONFIG_FILE --resume"
     echo "  3. See docs/TROUBLESHOOTING.md for common issues"
     exit 1
 fi

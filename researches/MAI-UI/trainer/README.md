@@ -33,10 +33,8 @@ trainer/
 │   └── rl_config.yaml               # RL 训练配置（独立使用）
 ├── data/                            # 数据处理模块
 │   ├── unified_data_processor.py    # 统一数据处理器（推荐）⭐
-│   ├── build_data.py                # 原始数据构建脚本
 │   ├── data_formats.py              # 标准数据格式定义
-│   ├── format_validators.py         # 数据格式验证器
-│   └── process_trajectory_jsonl.py  # 轨迹 JSONL 处理脚本
+│   └── format_validators.py         # 数据格式验证器
 ├── pipeline/                        # Pipeline 编排模块 ⭐
 │   ├── orchestrator.py              # 端到端流程编排器
 │   ├── checkpoint_manager.py        # 检查点管理器
@@ -47,9 +45,7 @@ trainer/
 │   └── report_generator.py          # 报告生成器
 ├── scripts/                         # 工具脚本 ⭐
 │   ├── quick_start.sh               # 一键启动完整流程
-│   ├── validate_data.py             # 数据验证工具
-│   ├── resume_training.py           # 恢复训练工具
-│   └── compress_images.py           # 图片压缩工具
+│   └── validate_data.py             # 数据验证工具
 ├── docs/                            # 详细文档 ⭐
 │   ├── DATA_FORMAT.md               # 数据格式详细说明
 │   └── TROUBLESHOOTING.md           # 常见问题排查指南
@@ -145,60 +141,357 @@ pip install -r requirements.txt
 
 确保上游代码在 `../upstream/src` 目录下可用。
 
-### 2. 数据构建
+### 2. 数据准备与构建
 
-#### 选项 A：统一数据处理器（推荐）⭐
+#### 2.1 准备原始数据
 
-支持多种输出格式，自动验证数据质量：
+在运行数据处理脚本之前，你需要准备轨迹数据。数据可以来自以下来源：
 
-```bash
-# 使用统一数据处理器
-python data/unified_data_processor.py \
-    --config configs/data_config.yaml \
-    --output_format prompt_response \  # 可选: openai_messages, full_trajectory
-    --validate  # 自动验证输出数据
+**方式 A：从上游 MobileWorld 运行生成的轨迹日志**
+
+上游运行后会生成以下目录结构：
+
+```
+your_data_root/
+├── task1/
+│   ├── trajectory.jsonl      # 轨迹数据（必需）
+│   ├── screenshots/          # 截图目录（必需）
+│   │   ├── step_001.png
+│   │   ├── step_002.png
+│   │   └── ...
+│   └── result.txt           # 评分文件（可选）
+├── task2/
+│   └── ...
+└── ...
 ```
 
-**支持的输出格式**：
-- `openai_messages`: OpenAI API 兼容格式（用于 API 部署）
-- `prompt_response`: Prompt-Response 格式（用于 SFT 训练，推荐）
-- `full_trajectory`: 完整轨迹格式（用于 RL 训练）
+**trajectory.jsonl 格式要求**（每行一个 JSON 对象）：
 
-**数据验证功能**：
+```json
+{"step_index": 1, "thinking": "...", "action": {"action": "click", "coordinate": [100, 200]}, "action_type": "click", "screenshot_path": "screenshots/step_001.png", "instruction": "打开微信", "success": true, "timestamp": "2026-01-19T10:00:00"}
+{"step_index": 2, "thinking": "...", "action": {"action": "type", "text": "hello"}, "action_type": "type", "screenshot_path": "screenshots/step_002.png", "success": true, "timestamp": "2026-01-19T10:00:05"}
+```
+
+**必需字段**：
+- `step_index`: 步骤索引（整数）
+- `thinking`: 思考过程（字符串）
+- `action`: 动作对象（字典，格式：`{"action": "click", "coordinate": [x, y]}` 等）
+- `action_type`: 动作类型（字符串，如 "click", "type", "swipe" 等）
+- `screenshot_path`: 截图路径（字符串，相对于 trajectory.jsonl 所在目录）
+- `instruction`: 任务指令（字符串，通常所有步骤共享同一个 instruction）
+
+**可选字段**：
+- `success`: 是否成功（布尔值）
+- `timestamp`: 时间戳（字符串）
+- `message`: 消息（字符串）
+
+#### 2.2 使用 CLI 构建训练数据集
+
+**基本用法**（推荐使用 CLI 参数）：
+
+```bash
+# 进入 trainer 目录（根目录）
+cd gui-agent-research/researches/MAI-UI/trainer
+
+# 处理单个 trajectory.jsonl 文件
+python data/unified_data_processor.py \
+    --input /path/to/task1/trajectory.jsonl \
+    --output ./data/processed/sft_train.jsonl \
+    --output-format prompt_response \
+    --image-format base64 \
+    --compress-images \
+    --image-quality 85
+
+# 批量处理目录中的所有 trajectory.jsonl 文件
+python data/unified_data_processor.py \
+    --input /path/to/your_data_root \
+    --output ./data/processed/sft_train.jsonl \
+    --output-format prompt_response \
+    --image-format base64
+```
+
+**使用配置文件**（推荐用于复杂场景）：
+
+```bash
+# 1. 创建或编辑配置文件 configs/my_data_config.yaml
+# 示例配置内容：
+# output_format: prompt_response
+# image_format: base64
+# max_samples_per_trajectory: -1
+# include_history: true
+# history_window: 5
+# image_max_size: null
+# image_quality: 85
+# skip_failed_steps: true
+# compress_images: true
+
+# 2. 运行处理脚本
+python data/unified_data_processor.py \
+    --config configs/my_data_config.yaml \
+    --input /path/to/your_data_root \
+    --output ./data/processed/sft_train.jsonl
+```
+
+**注意**：使用 `--config` 时，`--input` 和 `--output` 仍需通过 CLI 参数提供，配置文件主要用于设置处理选项。
+
+**CLI 参数说明**：
+
+| 参数 | 简写 | 必需 | 说明 | 默认值 |
+|------|------|------|------|--------|
+| `--input` | `-i` | ✅ | 输入路径：trajectory.jsonl 文件或包含多个 trajectory.jsonl 的目录 | - |
+| `--output` | `-o` | ✅ | 输出 JSONL 文件路径 | - |
+| `--config` | `-c` | ❌ | YAML 配置文件路径（覆盖 CLI 参数） | - |
+| `--output-format` | - | ❌ | 输出格式：`prompt_response`（推荐）、`openai_messages`、`full_trajectory` | `prompt_response` |
+| `--image-format` | - | ❌ | 图片格式：`base64`（嵌入）、`path`（路径）、`skip`（跳过） | `base64` |
+| `--compress-images` | - | ❌ | 是否压缩图片（JPEG） | `True` |
+| `--image-quality` | - | ❌ | JPEG 压缩质量（0-100） | `85` |
+
+**支持的输出格式**：
+
+1. **`prompt_response`**（⭐ 推荐用于 SFT 训练）
+   - **格式**：`{"prompt": "...", "response": "...", "metadata": {...}}`
+   - **用途**：直接用于 SFT 训练，格式最简单，处理效率最高
+   - **优势**：
+     - ✅ 格式简单，无需额外转换
+     - ✅ 训练时处理速度快
+     - ✅ 兼容所有 SFT 训练框架
+   - **图片处理**：
+     - `--image-format base64`：图片以 base64 编码嵌入到 prompt 中，格式为 `<image_base64>...</image_base64>`
+       - ✅ **推荐**：图片数据完整，训练时无需额外读取文件
+       - ⚠️ 文件较大（每个图片约 100-500KB base64 编码）
+     - `--image-format path`：图片路径嵌入到 prompt 中，格式为 `<image_path>/path/to/image.png</image_path>`
+       - ✅ 文件较小（只包含路径字符串）
+       - ⚠️ **训练时需要读取图片文件**：`sft_trainer.py` 会自动从路径读取图片
+       - ⚠️ 需要确保图片文件存在且路径正确（相对路径相对于数据文件所在目录）
+     - `--image-format skip`：使用 `[Image]` 占位符（不推荐，会丢失图片信息）
+   - **示例**（使用 base64 格式）：
+     ```json
+     {
+       "prompt": "You are a GUI agent...\n<image_base64>iVBORw0KGgoAAAANS...</image_base64>\nTask: 打开微信\n...",
+       "response": "<thinking>...</thinking>\n<tool_call>...</tool_call>",
+       "metadata": {"source": "...", "step_index": 1, "screenshot_path": "/path/to/step_001.png"}
+     }
+     ```
+   - **示例**（使用 path 格式）：
+     ```json
+     {
+       "prompt": "You are a GUI agent...\n<image_path>step_001.png</image_path>\nTask: 打开微信\n...",
+       "response": "<thinking>...</thinking>\n<tool_call>...</tool_call>",
+       "metadata": {"source": "...", "step_index": 1, "screenshot_path": "step_001.png"}
+     }
+     ```
+   - **使用建议**：
+     - **推荐使用 `base64`**：数据完整，训练时无需额外文件读取，适合大多数场景
+     - **使用 `path` 的场景**：
+       - 数据文件需要频繁传输/共享（文件较小）
+       - 图片文件已经存在且路径稳定
+       - 需要节省存储空间
+     - **注意**：使用 `path` 格式时，`sft_trainer.py` 会自动从路径读取图片文件，确保：
+       1. 图片文件与数据文件在同一目录，或使用绝对路径
+       2. 图片文件存在且可读
+       3. 路径格式正确（相对路径相对于数据文件所在目录）
+
+2. **`openai_messages`**（用于 API 部署和多模态训练）
+   - **格式**：`{"messages": [{"role": "system", "content": [...]}, ...], "metadata": {...}}`
+   - **用途**：
+     - OpenAI API 兼容格式，用于 API 服务部署
+     - 多模态训练（图片以 base64 嵌入）
+   - **优势**：
+     - ✅ 标准化的消息格式
+     - ✅ 支持多模态内容（文本 + 图片）
+     - ✅ 可直接用于 API 服务
+   - **使用建议**：适用于需要**多模态训练**或**API 部署**的场景
+
+3. **`full_trajectory`**（用于 RL 训练和轨迹分析）
+   - **格式**：`{"task_goal": "...", "steps": [...], "metadata": {...}}`
+   - **用途**：
+     - 强化学习训练（完整轨迹信息）
+     - 轨迹分析和可视化
+     - 需要保留完整上下文的任务
+   - **优势**：
+     - ✅ 保留完整轨迹信息
+     - ✅ 支持轨迹级别的训练
+     - ✅ 便于分析和调试
+   - **使用建议**：适用于**RL 训练**或需要**完整轨迹上下文**的场景
+   - **注意**：`sft_trainer.py` 会自动将 `full_trajectory` 格式转换为 `prompt_response` 格式（每个步骤一个样本）
+
+**格式选择建议总结**：
+
+| 使用场景 | 推荐格式 | 原因 |
+|---------|---------|------|
+| SFT 训练（大多数情况） | `prompt_response` | 格式简单，处理速度快，无需转换 |
+| 多模态训练（图片嵌入） | `openai_messages` | 支持 base64 图片嵌入，标准化格式 |
+| API 服务部署 | `openai_messages` | 兼容 OpenAI API 格式 |
+| RL 训练 | `full_trajectory` | 保留完整轨迹信息 |
+| 轨迹分析和调试 | `full_trajectory` | 便于查看完整上下文 |
+
+**处理结果**：
+
+脚本运行后会：
 - ✅ 自动检查图片路径是否存在
 - ✅ 验证动作格式是否合法
 - ✅ 统计样本数、动作类型分布、平均步数
-- ✅ 生成数据质量报告
+- ✅ 生成数据质量报告（终端输出）
+- ✅ 保存处理统计信息到 `processing_stats.json`
+
+**示例输出**：
+
+```
+✓ Using official MAI-UI prompt from MAI_MOBILE_SYS_PROMPT_ASK_USER_MCP
+
+Processing trajectories: 100%|████████████| 50/50 [02:30<00:00,  3.00s/it]
+
+============================================================
+Data Processing Statistics
+============================================================
+Total trajectories: 50
+Total steps: 523
+Successful steps: 485
+Failed steps: 38
+Skipped steps: 0
+Output samples: 523
+Avg steps per trajectory: 10.46
+
+Action Type Distribution:
+  click: 245 (46.8%)
+  type: 123 (23.5%)
+  swipe: 98 (18.7%)
+  open: 32 (6.1%)
+  ...
+
+Processing stats saved to: ./data/processed/processing_stats.json
+```
+
+**数据验证**（可选）：
+
+处理完成后，可以使用验证工具检查数据质量：
+
+```bash
+python scripts/validate_data.py \
+    --file ./data/processed/sft_train.jsonl \
+    --format prompt_response \
+    --output ./data/processed/validation_report.json
+```
 
 详细格式说明请参考 [docs/DATA_FORMAT.md](docs/DATA_FORMAT.md)
 
-#### 选项 B：原始数据构建脚本
-
-从上游运行产生的 `traj.json` 日志构建 SFT 数据集：
-
-```bash
-# 编辑 configs/data_config.yaml 设置 log_root 路径
-python data/build_data.py --config configs/data_config.yaml
-```
-
-输出为 JSONL 格式，每行包含：
-- `prompt`: 完整的 prompt（包含 system prompt、task goal、history、image）
-- `response`: 模型的原始 prediction
-- `metadata`: 任务名称、步骤、动作等元数据
-
 ### 3. SFT 训练
 
-使用构建的数据进行监督微调：
+`sft_trainer.py` 支持三种数据格式，会自动检测并转换。使用构建的数据进行监督微调：
+
+#### 3.1 使用 prompt_response 格式（推荐）⭐
 
 ```bash
-# 编辑 configs/sft_config.yaml 设置模型和数据路径
-python sft_trainer.py --config configs/sft_config.yaml
+# 1. 构建数据（使用 prompt_response 格式）
+python data/unified_data_processor.py \
+    --input /path/to/your_data_root \
+    --output ./data/processed/sft_train.jsonl \
+    --output-format prompt_response \
+    --image-format base64
 
-# 或使用 CLI 参数覆盖
-python sft_trainer.py --config configs/sft_config.yaml \
+# 2. 开始训练
+python sft_trainer.py \
+    --config configs/sft_config.yaml \
+    --data_path ./data/processed/sft_train.jsonl \
     --model_name_or_path Tongyi-MAI/MAI-UI-2B \
-    --data_path ./data/processed/sft_data.jsonl \
     --output_dir ./models/sft_model
+
+# 或使用 CLI 参数覆盖配置
+python sft_trainer.py \
+    --config configs/sft_config.yaml \
+    --data_path ./data/processed/sft_train.jsonl \
+    --model_name_or_path Tongyi-MAI/MAI-UI-2B \
+    --output_dir ./models/sft_model \
+    --num_train_epochs 3 \
+    --per_device_train_batch_size 2 \
+    --learning_rate 2e-5
+```
+
+**特点**：
+- ✅ 格式简单，处理速度快
+- ✅ 无需格式转换，直接训练
+- ✅ 推荐用于大多数场景
+
+#### 3.2 使用 openai_messages 格式（多模态训练）
+
+```bash
+# 1. 构建数据（使用 openai_messages 格式，图片以 base64 嵌入）
+python data/unified_data_processor.py \
+    --input /path/to/your_data_root \
+    --output ./data/processed/sft_train_messages.jsonl \
+    --output-format openai_messages \
+    --image-format base64 \
+    --compress-images \
+    --image-quality 85
+
+# 2. 开始训练（sft_trainer.py 会自动检测并转换格式）
+python sft_trainer.py \
+    --config configs/sft_config.yaml \
+    --data_path ./data/processed/sft_train_messages.jsonl \
+    --model_name_or_path Tongyi-MAI/MAI-UI-2B \
+    --output_dir ./models/sft_model
+```
+
+**特点**：
+- ✅ 支持多模态训练（文本 + 图片）
+- ✅ 自动转换为 prompt_response 格式
+- ✅ 适用于需要图片嵌入的场景
+
+#### 3.3 使用 full_trajectory 格式（完整轨迹）
+
+```bash
+# 1. 构建数据（使用 full_trajectory 格式）
+python data/unified_data_processor.py \
+    --input /path/to/your_data_root \
+    --output ./data/processed/sft_train_trajectory.jsonl \
+    --output-format full_trajectory \
+    --image-format path
+
+# 2. 开始训练（sft_trainer.py 会自动将每个轨迹的步骤转换为训练样本）
+python sft_trainer.py \
+    --config configs/sft_config.yaml \
+    --data_path ./data/processed/sft_train_trajectory.jsonl \
+    --model_name_or_path Tongyi-MAI/MAI-UI-2B \
+    --output_dir ./models/sft_model
+```
+
+**特点**：
+- ✅ 保留完整轨迹信息
+- ✅ 自动将每个步骤转换为独立的训练样本
+- ✅ 适用于需要轨迹级上下文的场景
+
+**格式转换说明**：
+
+`sft_trainer.py` 会自动检测数据格式并进行转换：
+- `prompt_response` → 直接使用
+- `openai_messages` → 转换为 `prompt_response`
+- `full_trajectory` → 每个轨迹的每个步骤转换为一个 `prompt_response` 样本
+
+训练时会显示检测到的格式：
+```
+Dataset size: 523
+Sample keys: ['prompt', 'response']
+Data format: prompt_response (detected automatically)
+```
+
+#### 3.4 通用训练参数
+
+所有格式都支持以下 CLI 参数：
+
+```bash
+python sft_trainer.py \
+    --config configs/sft_config.yaml \
+    --data_path ./data/processed/sft_train.jsonl \
+    --model_name_or_path Tongyi-MAI/MAI-UI-2B \
+    --output_dir ./models/sft_model \
+    --num_train_epochs 3 \
+    --per_device_train_batch_size 2 \
+    --gradient_accumulation_steps 8 \
+    --learning_rate 2e-5 \
+    --logging_steps 10 \
+    --save_steps 100 \
+    --warmup_steps 100 \
+    --bf16  # 或 --fp16（根据 GPU 支持情况）
 ```
 
 ### 4. RL 训练（基于 verl 的异步 on-policy）
@@ -318,36 +611,7 @@ python scripts/validate_data.py \
 # 📊 动作分布: click(45%), input_text(23%), swipe(18%), ...
 ```
 
-### resume_training.py - 恢复训练工具
-
-从中断点恢复训练：
-
-```bash
-# 自动检测最新 checkpoint 并恢复
-python scripts/resume_training.py \
-    --model_dir ./models/sft_model \
-    --config configs/sft_config.yaml
-
-# 指定 checkpoint 恢复
-python scripts/resume_training.py \
-    --checkpoint_path ./models/sft_model/checkpoint-1000 \
-    --config configs/sft_config.yaml
-```
-
-### compress_images.py - 图片压缩工具
-
-减小数据集体积，加速训练：
-
-```bash
-# 批量压缩图片
-python scripts/compress_images.py \
-    --input_dir ./data/raw/screenshots \
-    --output_dir ./data/processed/screenshots \
-    --quality 85 \  # JPEG 质量（1-100）
-    --max_size 1024  # 最大边长（像素）
-
-# 可减小 50-70% 体积，同时保持训练质量
-```
+**注意**：图片压缩功能已集成到 `unified_data_processor.py` 中，通过配置 `compress_images: true` 和 `image_quality: 85` 即可启用。恢复训练功能已集成到 `pipeline/orchestrator.py` 中，使用 `--resume` 参数即可。
 
 ---
 

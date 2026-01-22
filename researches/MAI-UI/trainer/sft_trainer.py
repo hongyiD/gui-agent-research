@@ -403,6 +403,65 @@ def extract_images_from_messages(messages: list[dict]) -> list[Image.Image]:
     return images
 
 
+def extract_images_from_prompt_response(prompt: str, data_dir: str | None = None) -> list[Image.Image]:
+    """Extract images from prompt_response format prompt string.
+    
+    Supports:
+    - <image_base64>...</image_base64>: Base64 encoded image data
+    - <image_path>...</image_path>: Path to image file (relative or absolute)
+    
+    Args:
+        prompt: Prompt string that may contain image tags
+        data_dir: Base directory for resolving relative image paths
+        
+    Returns:
+        List of PIL Image objects
+    """
+    images = []
+    
+    # Extract base64 images
+    base64_pattern = r"<image_base64>(.*?)</image_base64>"
+    for match in re.finditer(base64_pattern, prompt, re.DOTALL):
+        base64_data = match.group(1).strip()
+        try:
+            image = decode_base64_image(base64_data)
+            images.append(image)
+        except Exception as e:
+            print(f"Warning: Failed to decode base64 image: {e}")
+    
+    # Extract path images
+    path_pattern = r"<image_path>(.*?)</image_path>"
+    for match in re.finditer(path_pattern, prompt, re.DOTALL):
+        image_path = match.group(1).strip()
+        
+        # Resolve path
+        if not os.path.isabs(image_path):
+            if data_dir:
+                # Try relative to data directory
+                resolved_path = os.path.join(data_dir, image_path)
+                if not os.path.exists(resolved_path):
+                    # Try just the filename in data directory
+                    resolved_path = os.path.join(data_dir, os.path.basename(image_path))
+            else:
+                resolved_path = image_path
+        else:
+            resolved_path = image_path
+        
+        # Load image from file
+        if os.path.exists(resolved_path):
+            try:
+                image = Image.open(resolved_path)
+                if image.mode != "RGB":
+                    image = image.convert("RGB")
+                images.append(image)
+            except Exception as e:
+                print(f"Warning: Failed to load image from {resolved_path}: {e}")
+        else:
+            print(f"Warning: Image path not found: {resolved_path} (original: {image_path})")
+    
+    return images
+
+
 def convert_messages_to_prompt_response(messages: list[dict]) -> tuple[str, str]:
     """Convert OpenAI messages format to prompt/response format.
     
@@ -451,12 +510,89 @@ def convert_messages_to_prompt_response(messages: list[dict]) -> tuple[str, str]
     return prompt, response
 
 
+def convert_full_trajectory_to_prompt_response(trajectory: dict) -> list[tuple[str, str]]:
+    """Convert full_trajectory format to list of (prompt, response) pairs.
+    
+    Full trajectory format contains multiple steps, each step becomes a training sample.
+    
+    Args:
+        trajectory: Full trajectory dict with 'task_goal', 'steps', 'metadata'
+    
+    Returns:
+        List of (prompt, response) tuples, one per step
+    """
+    import sys
+    from pathlib import Path
+    
+    # Try to import official prompt
+    system_prompt = "You are a GUI agent. You are given a task and your action history, with screenshots. You need to perform the next action to complete the task."
+    
+    # Try importing from prompts directory
+    prompts_file = Path(__file__).parent / "prompts" / "maiui_official_prompts.py"
+    if prompts_file.exists():
+        try:
+            sys.path.insert(0, str(prompts_file.parent))
+            from maiui_official_prompts import MAI_MOBILE_SYS_PROMPT_ASK_USER_MCP
+            system_prompt = MAI_MOBILE_SYS_PROMPT_ASK_USER_MCP.render(tools="")
+        except ImportError:
+            pass
+    
+    task_goal = trajectory.get("task_goal", "")
+    steps = trajectory.get("steps", [])
+    metadata = trajectory.get("metadata", {})
+    
+    samples = []
+    
+    for i, step in enumerate(steps):
+        # Build prompt with task goal and history
+        prompt_parts = [system_prompt]
+        prompt_parts.append(f"\n## Task Goal\n{task_goal}\n")
+        
+        # Add history (previous steps)
+        if i > 0:
+            prompt_parts.append("## Action History\n")
+            for hist_step in steps[max(0, i-3):i]:  # Last 3 steps
+                hist_thinking = hist_step.get("thinking", "")
+                hist_action = hist_step.get("action", {})
+                if hist_thinking:
+                    prompt_parts.append(f"Step {hist_step.get('step_index', '?')}: {hist_thinking}")
+                if hist_action:
+                    prompt_parts.append(f"Action: {json.dumps(hist_action, ensure_ascii=False)}")
+                prompt_parts.append("")
+        
+        # Add current observation (screenshot)
+        screenshot_path = step.get("screenshot_path", "")
+        if screenshot_path:
+            prompt_parts.append("## Current Observation\n")
+            prompt_parts.append(f"<image_path>{screenshot_path}</image_path>")
+        
+        prompt = "\n".join(prompt_parts)
+        
+        # Build response (thinking + action)
+        thinking = step.get("thinking", "")
+        action = step.get("action", {})
+        
+        response_parts = []
+        if thinking:
+            response_parts.append(f"<thinking>\n{thinking}\n</thinking>")
+        if action:
+            action_json = json.dumps(action, ensure_ascii=False)
+            response_parts.append(f"<tool_call>\n{{\"name\": \"mobile_use\", \"arguments\": {action_json}}}\n</tool_call>")
+        
+        response = "\n".join(response_parts)
+        
+        samples.append((prompt, response))
+    
+    return samples
+
+
 def detect_and_convert_data_format(examples: dict) -> dict:
     """Detect data format and convert to prompt/response format if needed.
     
     Supports:
     - prompt_response format: {"prompt": str, "response": str}
     - openai_messages format: {"messages": [{"role": str, "content": str}]}
+    - full_trajectory format: {"task_goal": str, "steps": [...], "metadata": {...}}
     
     Args:
         examples: Dict with batched data (each key maps to a list)
@@ -500,12 +636,50 @@ def detect_and_convert_data_format(examples: dict) -> dict:
         
         return {"prompt": prompts, "response": responses}
     
+    # Check if in full_trajectory format
+    if "task_goal" in examples and "steps" in examples:
+        prompts = []
+        responses = []
+        
+        # Handle batched examples (trajectories is a list of trajectory dicts)
+        trajectories_list = []
+        
+        # Check if examples contains a single trajectory or multiple
+        if isinstance(examples["task_goal"], list):
+            # Multiple trajectories
+            for i in range(len(examples["task_goal"])):
+                trajectory = {
+                    "task_goal": examples["task_goal"][i],
+                    "steps": examples["steps"][i] if i < len(examples["steps"]) else [],
+                    "metadata": examples.get("metadata", [{}])[i] if isinstance(examples.get("metadata"), list) else examples.get("metadata", {}),
+                }
+                trajectories_list.append(trajectory)
+        else:
+            # Single trajectory
+            trajectory = {
+                "task_goal": examples["task_goal"],
+                "steps": examples["steps"],
+                "metadata": examples.get("metadata", {}),
+            }
+            trajectories_list.append(trajectory)
+        
+        # Convert each trajectory to multiple (prompt, response) pairs
+        for trajectory in trajectories_list:
+            step_samples = convert_full_trajectory_to_prompt_response(trajectory)
+            for prompt, response in step_samples:
+                prompts.append(prompt)
+                responses.append(response)
+        
+        return {"prompt": prompts, "response": responses}
+    
     # Unknown format
     available_keys = list(examples.keys())
     raise ValueError(
-        f"Unknown data format. Expected 'prompt'/'response' or 'messages' fields. "
-        f"Found keys: {available_keys}. "
-        f"Please ensure your data is in prompt_response or openai_messages format."
+        f"Unknown data format. Expected one of:\n"
+        f"  - prompt_response: 'prompt'/'response' fields\n"
+        f"  - openai_messages: 'messages' field\n"
+        f"  - full_trajectory: 'task_goal'/'steps' fields\n"
+        f"Found keys: {available_keys}."
     )
 
 
@@ -606,6 +780,8 @@ class PreprocessedMultiModalDataset(torch.utils.data.Dataset):
     
     This avoids the massive overhead of decoding base64 images on every batch.
     Images are decoded once and cached in memory.
+    
+    Supports both openai_messages and prompt_response formats.
     """
     
     def __init__(
@@ -615,10 +791,12 @@ class PreprocessedMultiModalDataset(torch.utils.data.Dataset):
         max_length: int = 2048,
         max_images_per_sample: int = 3,  # Limit images to avoid OOM/slow training
         show_progress: bool = True,
+        data_dir: str | None = None,  # Base directory for resolving image paths
     ):
         self.processor = processor
         self.max_length = max_length
         self.max_images_per_sample = max_images_per_sample
+        self.data_dir = data_dir
         self.preprocessed_data = []
         
         print(f"\n{'='*60}")
@@ -626,6 +804,8 @@ class PreprocessedMultiModalDataset(torch.utils.data.Dataset):
         print(f"{'='*60}")
         print(f"  Max images per sample: {max_images_per_sample}")
         print(f"  Total samples: {len(raw_data)}")
+        if data_dir:
+            print(f"  Data directory: {data_dir}")
         
         iterator = raw_data
         if show_progress:
@@ -638,10 +818,21 @@ class PreprocessedMultiModalDataset(torch.utils.data.Dataset):
         image_sizes = []
         
         for idx, sample in enumerate(iterator):
-            messages = sample.get("messages", [])
+            images = []
             
-            # Extract and decode images ONCE
-            images = extract_images_from_messages(messages)
+            # Check format and extract images accordingly
+            if "messages" in sample:
+                # openai_messages format
+                messages = sample.get("messages", [])
+                images = extract_images_from_messages(messages)
+            elif "prompt" in sample:
+                # prompt_response format - extract from prompt string
+                prompt = sample.get("prompt", "")
+                images = extract_images_from_prompt_response(prompt, data_dir=self.data_dir)
+            else:
+                # Unknown format, skip
+                pass
+            
             original_count = len(images)
             total_original_images += original_count
             
@@ -660,9 +851,8 @@ class PreprocessedMultiModalDataset(torch.utils.data.Dataset):
             
             # Store preprocessed data
             self.preprocessed_data.append({
-                "messages": messages,
+                "sample": sample,  # Store original sample for processing
                 "images": images,  # Already decoded PIL Images (limited)
-                "metadata": sample.get("metadata", {}),
             })
         
         # Print summary statistics
@@ -714,19 +904,44 @@ class MultiModalDataCollator:
         
         for i, feature in enumerate(features):
             sample_start = time.time()
-            messages = feature.get("messages", [])
             
             # Use preprocessed images if available (from PreprocessedMultiModalDataset)
             # This avoids decoding base64 on every batch - HUGE speedup!
             if "images" in feature:
                 images = feature["images"]
             else:
-                # Fallback: extract from messages (slow path)
-                images = extract_images_from_messages(messages)
+                images = []
             
-            # Convert messages to Qwen VL format
-            # Qwen VL expects messages with image objects, not placeholders
-            qwen_messages = self._convert_to_qwen_format(messages, images)
+            # Handle different data formats
+            sample = feature.get("sample", feature)  # Get original sample if available
+            
+            if "messages" in sample:
+                # openai_messages format
+                messages = sample.get("messages", [])
+                if not images:
+                    images = extract_images_from_messages(messages)
+                # Convert messages to Qwen VL format
+                qwen_messages = self._convert_to_qwen_format(messages, images)
+            elif "prompt" in sample:
+                # prompt_response format - convert to messages format
+                prompt = sample.get("prompt", "")
+                response = sample.get("response", "")
+                if not images:
+                    # Try to get data_dir from metadata or sample
+                    data_dir = None
+                    if "metadata" in sample:
+                        source = sample.get("metadata", {}).get("source", "")
+                        if source:
+                            data_dir = os.path.dirname(source)
+                    images = extract_images_from_prompt_response(prompt, data_dir=data_dir)
+                # Convert prompt_response to messages format for Qwen VL
+                qwen_messages = self._convert_prompt_response_to_qwen_format(prompt, response, images)
+            else:
+                # Fallback: try to extract from messages
+                messages = sample.get("messages", [])
+                if not images:
+                    images = extract_images_from_messages(messages)
+                qwen_messages = self._convert_to_qwen_format(messages, images)
             
             try:
                 # Use apply_chat_template if available (preferred method)
@@ -759,7 +974,7 @@ class MultiModalDataCollator:
                         print(f"[DEBUG] apply_chat_template: {t1-t0:.2f}s, processor: {t2-t1:.2f}s")
                 else:
                     # Fallback: manual formatting
-                    text = self._format_messages_manually(messages)
+                    text = self._format_messages_manually(qwen_messages)
                     if images:
                         inputs = self.processor(
                             text=[text],
@@ -778,7 +993,7 @@ class MultiModalDataCollator:
                 attention_mask = inputs["attention_mask"].squeeze(0)
                 
                 # Create labels: mask all tokens except the assistant response
-                labels = self._create_labels(input_ids, messages)
+                labels = self._create_labels(input_ids, qwen_messages)
                 
                 batch_input_ids.append(input_ids)
                 batch_attention_mask.append(attention_mask)
@@ -872,6 +1087,45 @@ class MultiModalDataCollator:
                 qwen_messages.append({"role": role, "content": qwen_content})
         
         return qwen_messages
+    
+    def _convert_prompt_response_to_qwen_format(
+        self, prompt: str, response: str, images: list[Image.Image]
+    ) -> list[dict]:
+        """Convert prompt_response format to Qwen VL messages format.
+        
+        Args:
+            prompt: Prompt string (may contain <image_base64> or <image_path> tags)
+            response: Response string
+            images: List of PIL Image objects
+            
+        Returns:
+            List of message dicts in Qwen VL format
+        """
+        # Remove image tags from prompt (images are passed separately)
+        prompt_clean = re.sub(r"<image_base64>.*?</image_base64>", "<image>", prompt, flags=re.DOTALL)
+        prompt_clean = re.sub(r"<image_path>.*?</image_path>", "<image>", prompt_clean, flags=re.DOTALL)
+        
+        # Build messages
+        messages = []
+        
+        # Extract system prompt if present
+        if "You are a GUI agent" in prompt_clean or "System:" in prompt_clean:
+            # Try to extract system prompt
+            system_match = re.search(r"(You are a GUI agent[^\n]*(?:\n[^\n]*)*)", prompt_clean)
+            if system_match:
+                system_prompt = system_match.group(1).strip()
+                messages.append({"role": "system", "content": system_prompt})
+                prompt_clean = prompt_clean.replace(system_prompt, "").strip()
+        
+        # Build user content with images
+        user_content = [{"type": "text", "text": prompt_clean}]
+        for img in images:
+            user_content.append({"type": "image", "image": img})
+        
+        messages.append({"role": "user", "content": user_content})
+        messages.append({"role": "assistant", "content": response})
+        
+        return messages
     
     def _format_messages_manually(self, messages: list[dict]) -> str:
         """Fallback: format messages manually."""
@@ -1306,18 +1560,32 @@ def main() -> None:
     
     # Check if data has images (multi-modal)
     has_images = False
-    if len(raw_data) > 0 and "messages" in raw_data[0]:
+    if len(raw_data) > 0:
         sample = raw_data[0]
-        messages = sample.get("messages", [])
-        for msg in messages:
-            content = msg.get("content", "")
-            if isinstance(content, list):
-                for item in content:
-                    if isinstance(item, dict) and item.get("type") == "image_url":
-                        has_images = True
-                        break
-            if has_images:
-                break
+        # Check openai_messages format
+        if "messages" in sample:
+            messages = sample.get("messages", [])
+            for msg in messages:
+                content = msg.get("content", "")
+                if isinstance(content, list):
+                    for item in content:
+                        if isinstance(item, dict) and item.get("type") == "image_url":
+                            has_images = True
+                            break
+                if has_images:
+                    break
+        # Check full_trajectory format
+        elif "steps" in sample:
+            steps = sample.get("steps", [])
+            for step in steps[:1]:  # Check first step only
+                if step.get("screenshot_path"):
+                    has_images = True
+                    break
+        # Check prompt_response format (may contain image paths in prompt)
+        elif "prompt" in sample:
+            prompt = sample.get("prompt", "")
+            if "<image" in prompt.lower() or "screenshot" in prompt.lower():
+                has_images = True
     
     print(f"Data contains images: {has_images}")
     
@@ -1372,12 +1640,22 @@ def main() -> None:
         )
         # Use PreprocessedMultiModalDataset to decode images ONCE (not every batch)
         # This provides a HUGE speedup compared to decoding base64 on every iteration
+        # Determine data directory for resolving image paths
+        data_dir = None
+        if len(raw_data) > 0:
+            sample = raw_data[0]
+            if "metadata" in sample:
+                source = sample.get("metadata", {}).get("source", "")
+                if source:
+                    data_dir = os.path.dirname(source)
+        
         train_dataset = PreprocessedMultiModalDataset(
             raw_data=raw_data,
             processor=processor,
             max_length=max_length,
             max_images_per_sample=max_images_per_sample,
             show_progress=True,
+            data_dir=data_dir,
         )
     else:
         print("Using text-only tokenization")
