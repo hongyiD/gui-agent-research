@@ -12,9 +12,9 @@ data:
   # Raw data
   raw_data_dir: "../../dataset/20260119_201327"
   
-  # Processed data output
-  processed_data_dir: "../../dataset/processed"
-  processed_data_file: "../../dataset/processed/sft_train.jsonl"
+  # Processed data output (与 raw_data_dir 同级，和 trajectory.jsonl 放一起)
+  processed_data_dir: "../../dataset/20260119_201327"
+  processed_data_file: "../../dataset/20260119_201327/sft_train.jsonl"
   
   # Processing options
   output_format: "prompt_response"  # openai_messages, prompt_response, full_trajectory
@@ -46,13 +46,13 @@ training:
   # SFT training
   # MAI-UI SFT focuses on Grounding + Navigation data with Instruction-as-Reasoning
   sft:
-    max_length: 4096  # Longer context for multi-step reasoning and history
-    num_train_epochs: 1  # More epochs for small dataset (31 samples)
+    max_length: 6200  # Longer context for multi-step reasoning and history
+    num_train_epochs: 3  # More epochs for small dataset (31 samples)
     per_device_train_batch_size: 1  # Keep small for memory efficiency with VL model
     gradient_accumulation_steps: 4  # Effective batch size = 4 (better for small dataset)
     learning_rate: 1.0e-4  # Higher LR for LoRA (standard: 1e-4 to 2e-4)
-    warmup_steps: 5  # Shorter warmup for small dataset
-    warmup_ratio: 0.1  # 10% warmup
+    warmup_steps: 1  # Shorter warmup for small dataset
+    # warmup_ratio: 0.1  # 10% warmup
     logging_steps: 1  # Log every step for small dataset monitoring
     save_steps: 5  # Save more frequently
     save_total_limit: 3
@@ -73,17 +73,14 @@ training:
   # Vision encoder is typically frozen during SFT; Grounding is enhanced via RL Stage 1 (GRPO)
   lora:
     enabled: true  # Enable LoRA for memory-efficient SFT
-    r: 8  # Reduced for V100 32GB - sufficient for 2B model
-    alpha: 16  # 2x r for stable learning
+    r: 16  # V100 32GB + 4bit: 适当提高表达能力
+    alpha: 32  # 2x r for stable learning
     dropout: 0.05  # LoRA dropout
-    target_modules:  # LLM attention + MLP layers (standard for Qwen2-VL)
+    target_modules:  # 只训练 attention 层（Qwen3-VL 官方推荐，节省显存）
       - q_proj
       - k_proj
       - v_proj
       - o_proj
-      - gate_proj
-      - up_proj
-      - down_proj
   
   # NOTE: MAI-UI does NOT use vision LoRA for SFT
   # Grounding capability is enhanced via:

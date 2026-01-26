@@ -182,6 +182,7 @@ try:
         LoraConfig,
         get_peft_model,
         prepare_model_for_kbit_training,
+        TaskType,
     )
     HAS_PEFT = True
 except ImportError:
@@ -370,11 +371,19 @@ def decode_base64_image(data_url: str) -> Image.Image:
     return image
 
 
-def extract_images_from_messages(messages: list[dict]) -> list[Image.Image]:
+def extract_images_from_messages(
+    messages: list[dict],
+    data_dir: str | None = None,
+) -> list[Image.Image]:
     """Extract all images from OpenAI messages format.
+    
+    Supports:
+    - Base64 encoded images (data:image/... URLs)
+    - File paths (relative or absolute)
     
     Args:
         messages: List of message dicts with 'role' and 'content' keys
+        data_dir: Base directory for resolving relative image paths
         
     Returns:
         List of PIL Image objects
@@ -395,10 +404,25 @@ def extract_images_from_messages(messages: list[dict]) -> list[Image.Image]:
                     
                     if url:
                         try:
-                            image = decode_base64_image(url)
-                            images.append(image)
+                            # Check if it's a base64 data URL
+                            if url.startswith("data:"):
+                                image = decode_base64_image(url)
+                                images.append(image)
+                            else:
+                                # Treat as file path
+                                image_path = url
+                                if not os.path.isabs(image_path) and data_dir:
+                                    image_path = os.path.join(data_dir, image_path)
+                                
+                                if os.path.exists(image_path):
+                                    image = Image.open(image_path)
+                                    if image.mode != "RGB":
+                                        image = image.convert("RGB")
+                                    images.append(image)
+                                else:
+                                    print(f"Warning: Image file not found: {image_path}")
                         except Exception as e:
-                            print(f"Warning: Failed to decode image: {e}")
+                            print(f"Warning: Failed to load image: {e}")
     
     return images
 
@@ -824,7 +848,7 @@ class PreprocessedMultiModalDataset(torch.utils.data.Dataset):
             if "messages" in sample:
                 # openai_messages format
                 messages = sample.get("messages", [])
-                images = extract_images_from_messages(messages)
+                images = extract_images_from_messages(messages, data_dir=self.data_dir)
             elif "prompt" in sample:
                 # prompt_response format - extract from prompt string
                 prompt = sample.get("prompt", "")
@@ -1347,14 +1371,14 @@ def main() -> None:
     max_length = config.get("training", {}).get("max_length", 2048)
     
     # LoRA configuration (enabled by default for memory efficiency)
+    # Default values aligned with Qwen3-VL official training code
     lora_config_dict = config.get("training", {}).get("lora", {})
     use_lora = lora_config_dict.get("enabled", True)  # Default to True for memory efficiency
-    lora_r = lora_config_dict.get("r", 16)
-    lora_alpha = lora_config_dict.get("alpha", 32)
+    lora_r = lora_config_dict.get("r", 64)  # Qwen3-VL default: 64
+    lora_alpha = lora_config_dict.get("alpha", 128)  # Qwen3-VL default: 128
     lora_dropout = lora_config_dict.get("dropout", 0.05)
     lora_target_modules = lora_config_dict.get("target_modules", [
-        "q_proj", "k_proj", "v_proj", "o_proj",
-        "gate_proj", "up_proj", "down_proj"
+        "q_proj", "k_proj", "v_proj", "o_proj"  # Qwen attention layers only
     ])
     
     # Quantization config for 4-bit loading (optional, saves more memory)
@@ -1504,6 +1528,9 @@ def main() -> None:
     
     print(f"VL Model: {is_vl_model}")
     
+    # Disable KV cache for training (following Qwen3-VL official training)
+    model.config.use_cache = False
+    
     # Enable gradient checkpointing for memory efficiency
     if use_gradient_checkpointing:
         model.gradient_checkpointing_enable()
@@ -1512,16 +1539,22 @@ def main() -> None:
     
     # Apply LoRA if enabled
     if use_lora:
+        # Freeze all parameters first (following Qwen3-VL official training)
+        for p in model.parameters():
+            p.requires_grad = False
+        print("All model parameters frozen for LoRA training")
+        
         if use_4bit:
             model = prepare_model_for_kbit_training(model)
         
-        # For VL models, don't specify task_type (it's not CAUSAL_LM)
+        # Configure LoRA with task_type (aligned with Qwen3-VL official)
         lora_config = LoraConfig(
             r=lora_r,
             lora_alpha=lora_alpha,
             lora_dropout=lora_dropout,
             target_modules=lora_target_modules,
             bias="none",
+            task_type=TaskType.CAUSAL_LM,
         )
         
         model = get_peft_model(model, lora_config)
@@ -1641,13 +1674,9 @@ def main() -> None:
         # Use PreprocessedMultiModalDataset to decode images ONCE (not every batch)
         # This provides a HUGE speedup compared to decoding base64 on every iteration
         # Determine data directory for resolving image paths
-        data_dir = None
-        if len(raw_data) > 0:
-            sample = raw_data[0]
-            if "metadata" in sample:
-                source = sample.get("metadata", {}).get("source", "")
-                if source:
-                    data_dir = os.path.dirname(source)
+        # Use the directory containing the data file (sft_train.jsonl)
+        data_dir = os.path.dirname(os.path.abspath(data_path))
+        print(f"Image base directory: {data_dir}")
         
         train_dataset = PreprocessedMultiModalDataset(
             raw_data=raw_data,
@@ -1731,6 +1760,12 @@ def main() -> None:
     
     # Save tokenizer
     tokenizer.save_pretrained(output_dir)
+    
+    # Save processor for VL models (important for inference)
+    if is_vl_model and processor is not None:
+        processor.save_pretrained(output_dir)
+        print(f"Processor saved to {output_dir}")
+    
     print(f"SFT training completed. Output saved to {output_dir}")
 
 
