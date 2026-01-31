@@ -176,9 +176,13 @@ your_data_root/
 - `step_index`: 步骤索引（整数）
 - `thinking`: 思考过程（字符串）
 - `action`: 动作对象（字典，格式：`{"action": "click", "coordinate": [x, y]}` 等）
+  - **坐标格式**：可以是绝对坐标（像素值）或归一化坐标（0-1范围）
+  - 如果轨迹数据中是归一化坐标，`data_processor.py` 会自动转换为绝对坐标
 - `action_type`: 动作类型（字符串，如 "click", "type", "swipe" 等）
 - `screenshot_path`: 截图路径（字符串，相对于 trajectory.jsonl 所在目录）
 - `instruction`: 任务指令（字符串，通常所有步骤共享同一个 instruction）
+
+**注意**：训练数据中的坐标会被自动转换为**绝对坐标（像素值）**格式，与模型输出格式一致。
 
 **可选字段**：
 - `success`: 是否成功（布尔值）

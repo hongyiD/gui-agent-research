@@ -9,12 +9,13 @@ project:
 
 # Data preprocessing settings
 data:
-  # Raw data
-  raw_data_dir: "../../dataset/20260119_201327"
+  # Raw data (batch processed train_data directory)
+  raw_data_dir: "../../dataset/train_data"
   
-  # Processed data output (与 raw_data_dir 同级，和 trajectory.jsonl 放一起)
-  processed_data_dir: "../../dataset/20260119_201327"
-  processed_data_file: "../../dataset/20260119_201327/sft_train.jsonl"
+  # Processed data output (批处理汇总的 sft_train.jsonl)
+  # 图片路径格式: "subfolder/step_XXX_resized.png" (相对于 train_data 目录)
+  processed_data_dir: "../../dataset/train_data"
+  processed_data_file: "../../dataset/train_data/sft_train.jsonl"
   
   # Processing options
   output_format: "prompt_response"  # openai_messages, prompt_response, full_trajectory
@@ -66,7 +67,7 @@ training:
   # Image limit per sample (critical for training speed!)
   # Each image adds ~500MB VRAM and significant processing time
   # 26 images per sample is WAY too many - limit to 1-3 for practical training
-  max_images_per_sample: 3  # Start with 1, increase if VRAM allows
+  max_images_per_sample: 1  # Start with 1, increase if VRAM allows
   
   # LoRA configuration (Parameter-Efficient Fine-Tuning)
   # NOTE: MAI-UI uses SFT + GRPO (RL) paradigm, different from AgentCPM-GUI's vision LoRA approach

@@ -25,11 +25,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-import torch
-import yaml
-from datasets import load_dataset
-from PIL import Image
-from transformers import (
+import torch # type: ignore
+import yaml # type: ignore
+from datasets import load_dataset # type: ignore
+from PIL import Image # type: ignore
+from transformers import ( # type: ignore
     AutoModel,
     AutoModelForCausalLM,
     AutoProcessor,
@@ -157,28 +157,28 @@ class DetailedLoggingCallback(TrainerCallback):
 
 # Try to import Qwen2VL model and processor
 try:
-    from transformers import Qwen2VLForConditionalGeneration, Qwen2VLProcessor
+    from transformers import Qwen2VLForConditionalGeneration, Qwen2VLProcessor # type: ignore
     HAS_QWEN2VL = True
 except ImportError:
     HAS_QWEN2VL = False
 
 # Try to import Qwen3VL model class if available
 try:
-    from transformers import Qwen3VLForConditionalGeneration
+    from transformers import Qwen3VLForConditionalGeneration # type: ignore
     HAS_QWEN3VL = True
 except ImportError:
     HAS_QWEN3VL = False
 
 # Try to import AutoModelForVision2Seq if available
 try:
-    from transformers import AutoModelForVision2Seq
+    from transformers import AutoModelForVision2Seq # type: ignore
     HAS_VISION2SEQ = True
 except ImportError:
     HAS_VISION2SEQ = False
 
 # Try to import PEFT for LoRA
 try:
-    from peft import (
+    from peft import (  # type: ignore
         LoraConfig,
         get_peft_model,
         prepare_model_for_kbit_training,
@@ -420,10 +420,10 @@ def extract_images_from_messages(
                                         image = image.convert("RGB")
                                     images.append(image)
                                 else:
-                                    print(f"Warning: Image file not found: {image_path}")
+                                    raise FileNotFoundError(f"Image file not found: {image_path}")
                         except Exception as e:
-                            print(f"Warning: Failed to load image: {e}")
-    
+                            import traceback
+                            print(f"Error: Failed to load image: {e}\nFull traceback:\n{traceback.format_exc()}")
     return images
 
 
@@ -556,7 +556,7 @@ def convert_full_trajectory_to_prompt_response(trajectory: dict) -> list[tuple[s
     if prompts_file.exists():
         try:
             sys.path.insert(0, str(prompts_file.parent))
-            from maiui_official_prompts import MAI_MOBILE_SYS_PROMPT_ASK_USER_MCP
+            from maiui_official_prompts import MAI_MOBILE_SYS_PROMPT_ASK_USER_MCP  # type: ignore
             system_prompt = MAI_MOBILE_SYS_PROMPT_ASK_USER_MCP.render(tools="")
         except ImportError:
             pass
@@ -833,7 +833,7 @@ class PreprocessedMultiModalDataset(torch.utils.data.Dataset):
         
         iterator = raw_data
         if show_progress:
-            from tqdm import tqdm
+            from tqdm import tqdm # type: ignore
             iterator = tqdm(raw_data, desc="Decoding images")
         
         total_images = 0
@@ -1174,43 +1174,102 @@ class MultiModalDataCollator:
     def _create_labels(
         self, input_ids: torch.Tensor, messages: list[dict]
     ) -> torch.Tensor:
-        """Create labels with prompt tokens masked (-100)."""
-        labels = input_ids.clone()
+        """Create labels with prompt tokens masked (-100).
         
-        # Find assistant response tokens
-        # Simple heuristic: mask everything before the last assistant turn
-        # For proper masking, we would need to track token positions
+        使用官方实现的方法：通过查找 <|im_start|>assistant 和 <|im_end|> 
+        token ID 来精确定位 assistant response 的位置。
         
-        # Get the assistant response text
-        assistant_response = ""
-        for msg in messages:
-            if msg.get("role") == "assistant":
-                content = msg.get("content", "")
-                if isinstance(content, str):
-                    assistant_response = content
-                elif isinstance(content, list):
-                    assistant_response = " ".join(
-                        item.get("text", "") 
-                        for item in content 
-                        if isinstance(item, dict) and item.get("type") == "text"
-                    )
+        动态获取 token ID，兼容不同版本的 Qwen 模型。
+        """
+        labels = torch.full_like(input_ids, -100)  # IGNORE_INDEX
         
-        if assistant_response:
-            # Tokenize just the response to find its length
-            response_tokens = self.processor.tokenizer(
-                assistant_response,
-                add_special_tokens=False,
-                return_tensors="pt",
-            )
-            response_len = response_tokens["input_ids"].shape[1]
+        # 动态获取特殊 token ID（更健壮的方法）
+        tokenizer = self.processor.tokenizer
+        
+        # 方法1：尝试从 tokenizer 编码获取 "assistant" token ID
+        # 注意：官方实现查找的是 "assistant" token (77091)，而不是 "<|im_start|>assistant" 的第一个 token
+        # 因为 "<|im_start|>assistant" 会被编码为多个 token：[<|im_start|>, assistant]
+        # 如果只取第一个 token，会错误匹配到 user 部分（因为 user 也使用 <|im_start|>）
+        try:
+            # 编码 "assistant" 获取 token ID（不是 "<|im_start|>assistant"）
+            assistant_tokens = tokenizer.encode("assistant", add_special_tokens=False)
+            # "assistant" 通常被编码为单个 token
+            ASSISTANT_START_TOKEN = assistant_tokens[0] if assistant_tokens else None
+        except Exception:
+            ASSISTANT_START_TOKEN = None
+        
+        # 方法2：获取 <|im_end|> token ID（通常是 eos_token_id）
+        # 从 config.json 确认：eos_token_id = 151645
+        IM_END_TOKEN = getattr(tokenizer, 'eos_token_id', None) or 151645
+        
+        # 方法3：获取 <|im_start|> token ID（用于验证）
+        # 动态获取或使用已知值 151644
+        try:
+            im_start_tokens = tokenizer.encode("<|im_start|>", add_special_tokens=False)
+            IM_START_TOKEN = im_start_tokens[0] if im_start_tokens else 151644
+        except Exception:
+            IM_START_TOKEN = 151644
+        
+        # 方法4：如果 ASSISTANT_START_TOKEN 仍为 None，使用官方实现的硬编码值
+        # （基于 qwenvl 实现和 MAI-UI-2B config.json 的验证）
+        if ASSISTANT_START_TOKEN is None:
+            # 官方 qwenvl 实现使用的值：77091
+            # 这是 "assistant" token，不是 "<|im_start|>assistant" 的第一个 token
+            ASSISTANT_START_TOKEN = 77091
+        
+        # 使用与官方实现相同的方法：直接操作 tensor，而不是 flatten/reshape
+        # 官方实现使用 input_ids[0] 和 labels[0]，但我们的 input_ids 可能已经是 1D
+        # 所以我们需要处理两种情况
+        if input_ids.dim() == 1:
+            # 1D tensor: 直接使用
+            input_ids_flat = input_ids.tolist()
+            L = len(input_ids_flat)
             
-            # Mask everything except the last response_len tokens
-            # (plus a few tokens for <|im_end|> etc.)
-            mask_len = max(0, len(labels) - response_len - 5)
-            labels[:mask_len] = -100
+            # 查找所有有效的 assistant token 位置（前面必须是 <|im_start|>）
+            assistant_positions = []
+            for pos in range(L):
+                if input_ids_flat[pos] == ASSISTANT_START_TOKEN:
+                    # 验证前面是 <|im_start|> token
+                    if pos > 0 and input_ids_flat[pos - 1] == IM_START_TOKEN:
+                        assistant_positions.append(pos)
+            
+            # 只处理最后一个 assistant 响应（如果有多个响应，只标记最后一个）
+            if assistant_positions:
+                pos = assistant_positions[-1]  # 最后一个
+                # 官方实现使用 pos + 2，跳过 "assistant" token 和换行符
+                ans_start = pos + 2
+                ans_end = ans_start
+                while ans_end < L and input_ids_flat[ans_end] != IM_END_TOKEN:
+                    ans_end += 1
+                if ans_end < L:
+                    # 官方实现使用 ans_end + 2，包含 <|im_end|> token 和换行符
+                    # 只标记 response 内容（不包含 assistant token 本身）
+                    labels[ans_start : ans_end + 2] = input_ids[ans_start : ans_end + 2]
         else:
-            # No assistant response found, mask all
-            labels[:] = -100
+            # 2D+ tensor: 使用与官方实现相同的方法
+            input_ids_flat = input_ids[0].tolist()
+            L = len(input_ids_flat)
+            
+            # 查找所有有效的 assistant token 位置（前面必须是 <|im_start|>）
+            assistant_positions = []
+            for pos in range(L):
+                if input_ids_flat[pos] == ASSISTANT_START_TOKEN:
+                    # 验证前面是 <|im_start|> token
+                    if pos > 0 and input_ids_flat[pos - 1] == IM_START_TOKEN:
+                        assistant_positions.append(pos)
+            
+            # 只处理最后一个 assistant 响应（如果有多个响应，只标记最后一个）
+            if assistant_positions:
+                pos = assistant_positions[-1]  # 最后一个
+                # 官方实现使用 pos + 2，跳过 "assistant" token 和换行符
+                ans_start = pos + 2
+                ans_end = ans_start
+                while ans_end < L and input_ids_flat[ans_end] != IM_END_TOKEN:
+                    ans_end += 1
+                if ans_end < L:
+                    # 官方实现使用 ans_end + 2，包含 <|im_end|> token 和换行符
+                    # 只标记 response 内容（不包含 assistant token 本身）
+                    labels[0, ans_start : ans_end + 2] = input_ids[0, ans_start : ans_end + 2]
         
         return labels
     
@@ -1689,7 +1748,7 @@ def main() -> None:
     else:
         print("Using text-only tokenization")
         # Convert to HuggingFace Dataset for tokenization
-        from datasets import Dataset
+        from datasets import Dataset  # type: ignore
         dataset = Dataset.from_list(raw_data)
         
         # Tokenize for text-only training

@@ -8,6 +8,8 @@
 2. 展示原始格式
 3. 展示转换后的Qwen VL格式
 4. 展示最终tokenize后的格式（如果可能）
+
+运行脚本：KMP_DUPLICATE_LIB_OK=TRUE python show_training_sample.py
 """
 
 import json
@@ -83,6 +85,97 @@ def show_sample_structure(sample: dict):
     print(f"\n元数据:")
     for key, value in metadata.items():
         print(f"  {key}: {value}")
+    print()
+    
+    # 5. 验证坐标格式
+    print("5. 坐标格式验证")
+    print("-" * 80)
+    assistant_msg = None
+    for msg in messages:
+        if msg.get("role") == "assistant":
+            assistant_msg = msg
+            break
+    
+    if assistant_msg:
+        content = assistant_msg.get("content", "")
+        if isinstance(content, list):
+            for item in content:
+                if item.get("type") == "text":
+                    text = item.get("text", "")
+                    # 检查是否有 tool_call
+                    if "<tool_call>" in text:
+                        import re
+                        # 提取 tool_call 内容
+                        tool_call_match = re.search(r"<tool_call>(.*?)</tool_call>", text, re.DOTALL)
+                        if tool_call_match:
+                            try:
+                                tool_call_json = json.loads(tool_call_match.group(1).strip())
+                                arguments = tool_call_json.get("arguments", {})
+                                
+                                # 检查坐标字段
+                                coord_fields = ["coordinate", "start_coordinate", "end_coordinate"]
+                                for field in coord_fields:
+                                    if field in arguments:
+                                        coords = arguments[field]
+                                        if isinstance(coords, list) and len(coords) >= 2:
+                                            x, y = coords[0], coords[1]
+                                            print(f"  发现坐标字段: {field}")
+                                            print(f"    坐标值: [{x}, {y}]")
+                                            
+                                            # 检查坐标格式
+                                            image_width = metadata.get("image_width")
+                                            image_height = metadata.get("image_height")
+                                            
+                                            if image_width and image_height:
+                                                if 0 <= x <= 1 and 0 <= y <= 1:
+                                                    print(f"    ⚠️  警告: 坐标是归一化格式 (0-1)，应该是绝对坐标（像素值）")
+                                                    abs_x = int(x * image_width)
+                                                    abs_y = int(y * image_height)
+                                                    print(f"    建议的绝对坐标: [{abs_x}, {abs_y}]")
+                                                elif 0 <= x <= image_width and 0 <= y <= image_height:
+                                                    print(f"    ✅ 坐标格式正确: 绝对坐标（像素值），在图像尺寸范围内")
+                                                else:
+                                                    print(f"    ⚠️  警告: 坐标超出图像尺寸范围 (图像: {image_width}x{image_height})")
+                                            else:
+                                                if 0 <= x <= 1 and 0 <= y <= 1:
+                                                    print(f"    ⚠️  警告: 坐标是归一化格式 (0-1)，但缺少图像尺寸信息")
+                                                else:
+                                                    print(f"    ℹ️  坐标值: [{x}, {y}] (无法验证，缺少图像尺寸信息)")
+                            except json.JSONDecodeError:
+                                print(f"    ⚠️  无法解析 tool_call JSON")
+    
+    # 检查历史动作中的坐标
+    user_msg = None
+    for msg in messages:
+        if msg.get("role") == "user":
+            user_msg = msg
+            break
+    
+    if user_msg:
+        content = user_msg.get("content", "")
+        if isinstance(content, list):
+            for item in content:
+                if item.get("type") == "text":
+                    text = item.get("text", "")
+                    # 检查历史动作中的坐标
+                    if "Previous actions:" in text and "coordinate" in text:
+                        import re
+                        # 提取 Action JSON
+                        action_matches = re.findall(r'Action: (\{.*?"coordinate".*?\})', text)
+                        if action_matches:
+                            print(f"\n  历史动作中的坐标:")
+                            for i, action_str in enumerate(action_matches[:3]):  # 只检查前3个
+                                try:
+                                    action = json.loads(action_str)
+                                    if "coordinate" in action:
+                                        coords = action["coordinate"]
+                                        if isinstance(coords, list) and len(coords) >= 2:
+                                            x, y = coords[0], coords[1]
+                                            print(f"    动作 {i+1}: [{x}, {y}]")
+                                            if 0 <= x <= 1 and 0 <= y <= 1:
+                                                print(f"      ⚠️  警告: 归一化坐标，应该是绝对坐标")
+                                except json.JSONDecodeError:
+                                    pass
     print()
     
     # 3. 转换为Qwen VL格式（模拟）
@@ -179,7 +272,7 @@ def show_sample_structure(sample: dict):
 
 def main():
     # 默认数据路径
-    default_data_path = trainer_dir.parent / "dataset" / "processed" / "sft_train_final.jsonl"
+    default_data_path = trainer_dir.parent / "dataset" / "20260128_113523" / "sft_train.jsonl"
     
     if len(sys.argv) > 1:
         data_path = sys.argv[1]
@@ -194,7 +287,7 @@ def main():
         print(f"  python {sys.argv[0]} {default_data_path} 0")
         return
     
-    index = int(sys.argv[2]) if len(sys.argv) > 2 else 0
+    index = 2 # int(sys.argv[2]) if len(sys.argv) > 2 else 0
     
     print(f"加载数据文件: {data_path}")
     print(f"样本索引: {index}")
