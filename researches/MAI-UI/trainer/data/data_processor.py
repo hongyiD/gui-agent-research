@@ -56,6 +56,9 @@ except ImportError:
 # the standard version for LoRA fine-tuning unless those actions are needed.
 MAI_MOBILE_SYS_PROMPT = None
 
+# Constants
+SCALE_FACTOR = 999
+
 prompts_file = Path(__file__).parent.parent / "prompts" / "maiui_official_prompts.py"
 if prompts_file.exists():
     try:
@@ -251,7 +254,7 @@ def convert_coordinates_in_action(
     image_height: int,
     scale_ratio: float = 1.0,
 ) -> dict:
-    """Convert normalized coordinates to absolute, and optionally scale.
+    """Convert normalized coordinates to absolute, scale, and normalize to 0-999 range.
     
     Args:
         action: Action dictionary that may contain coordinate fields.
@@ -260,12 +263,16 @@ def convert_coordinates_in_action(
         scale_ratio: Optional scale ratio for resized images (resized_size / original_size).
         
     Returns:
-        New action dict with converted/scaled coordinates.
+        New action dict with converted/scaled coordinates normalized to 0-999 range.
     """
     action = action.copy()  # Don't modify original
     
     # Fields that may contain coordinates
     coord_fields = ["coordinate", "start_coordinate", "end_coordinate"]
+    
+    # Calculate scaled image dimensions
+    scaled_width = image_width * scale_ratio
+    scaled_height = image_height * scale_ratio
     
     for field in coord_fields:
         if field in action:
@@ -275,16 +282,32 @@ def convert_coordinates_in_action(
                 if isinstance(x, (int, float)) and isinstance(y, (int, float)):
                     # If coordinates are normalized (0-1 range), convert to absolute first
                     if 0 <= x <= 1 and 0 <= y <= 1:
-                        abs_x = int(x * image_width)
-                        abs_y = int(y * image_height)
+                        abs_x = x * image_width
+                        abs_y = y * image_height
                     else:
                         # Already absolute coordinates
-                        abs_x, abs_y = int(x), int(y)
+                        abs_x, abs_y = x, y
                     
                     # Apply scale ratio for resized images
-                    scaled_x = int(abs_x * scale_ratio)
-                    scaled_y = int(abs_y * scale_ratio)
-                    action[field] = [scaled_x, scaled_y]
+                    scaled_x = abs_x * scale_ratio
+                    scaled_y = abs_y * scale_ratio
+                    
+                    # Scale to 0-999 range: x/width*999 and y/height*999
+                    if scaled_width > 0:
+                        final_x = int(scaled_x / scaled_width * SCALE_FACTOR)
+                    else:
+                        final_x = 0
+                    
+                    if scaled_height > 0:
+                        final_y = int(scaled_y / scaled_height * SCALE_FACTOR)
+                    else:
+                        final_y = 0
+                    
+                    # Clamp to valid range
+                    final_x = max(0, min(SCALE_FACTOR, final_x))
+                    final_y = max(0, min(SCALE_FACTOR, final_y))
+                    
+                    action[field] = [final_x, final_y]
     
     return action
 

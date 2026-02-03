@@ -8,6 +8,8 @@ This script fine-tunes a pre-trained MAI-UI model using trajectory-based SFT dat
 with configuration-driven training and proper prompt/response formatting.
 
 Supports multi-modal training with base64-encoded images in JSONL format.
+
+python sft_trainer.py --config configs/my_config_119.yaml > logs/train_$(date +%Y%m%d_%H%M%S).log 2>&1
 """
 
 from __future__ import annotations

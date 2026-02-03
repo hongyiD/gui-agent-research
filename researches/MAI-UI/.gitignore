@@ -2,6 +2,7 @@ upstream/
 vllm/
 dataset/
 MAI-UI-WebUI/
+Qwen3-VL/
 .docs/
 
 **/logs/
